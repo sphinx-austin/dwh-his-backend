@@ -85,10 +85,10 @@ environ.Env.read_env()
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': env("DATABASE_NAME"),
-        'USER': env("DATABASE_USER"),
-        'PASSWORD': env("DATABASE_PASSWORD"),
-        'HOST': env("DATABASE_HOST"),
+        'NAME': os.environ.get('DBNAME', ''),
+        'USER': os.environ.get('DBUSER', ''),
+        'PASSWORD': os.environ.get('DBPASSWORD', ''),
+        'HOST': os.environ.get('DBHOST', ''),
         'PORT': '3306',
     }
 }
@@ -143,11 +143,3 @@ CRISPY_TEMPLATE_PACK = 'bootstrap4'
 LOGIN_URL = '/user/login/'
 LOGIN_REDIRECT_URL = 'index'
 LOGOUT_REDIRECT_URL = 'index'
-
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-DEFAULT_FROM_EMAIL = os.environ.get('EMAIL_HOST_USER', '')
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
-EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
