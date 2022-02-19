@@ -88,7 +88,11 @@ DATABASES = {
         'NAME': env("DATABASE_NAME"),
         'USER': env("DATABASE_USER"),
         'PASSWORD': env("DATABASE_PASSWORD"),
+<<<<<<< HEAD
         'HOST': env("DATABASE_HOST"),
+=======
+        'HOST': 'dwh-his-db-1',
+>>>>>>> 2f80dc14ed851f8447dfb043ff727d2c9802bc9d
         'PORT': '3306',
     }
 }
