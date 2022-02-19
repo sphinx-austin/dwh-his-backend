@@ -85,10 +85,10 @@ environ.Env.read_env()
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.environ.get('DBNAME', ''),
-        'USER': os.environ.get('DBUSER', ''),
-        'PASSWORD': os.environ.get('DBPASSWORD', ''),
-        'HOST': os.environ.get('DBHOST', ''),
+        'NAME': env("DATABASE_NAME"),
+        'USER': env("DATABASE_USER"),
+        'PASSWORD': env("DATABASE_PASSWORD"),
+        'HOST': 'dwh-his-db-1',
         'PORT': '3306',
     }
 }
