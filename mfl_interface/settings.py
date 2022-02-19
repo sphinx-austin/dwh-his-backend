@@ -88,7 +88,7 @@ DATABASES = {
         'NAME': env("DATABASE_NAME"),
         'USER': env("DATABASE_USER"),
         'PASSWORD': env("DATABASE_PASSWORD"),
-        'HOST': 'dwh-his_mysql_1',
+        'HOST': 'his-list_mysql_1',
         'PORT': '3306',
     }
 }
