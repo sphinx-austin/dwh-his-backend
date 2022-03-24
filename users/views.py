@@ -29,9 +29,13 @@ def signin(request):
     return redirect(auth_token_url)
 
 
-# def signin_oidc(request):
-#     # allows frontend to consume access token and return to backen
-#     return render(request, 'users/signin_oidc.html')
+def signin_oidc(request):
+    # allows frontend to consume access token and return to backen
+    return render(request, 'users/signin_oidc.html')
+
+
+def redirect_to_frontend(request):
+    return HttpResponseRedirect('http://localhost:3000')
 
 
 from django.views.decorators.csrf import csrf_exempt,csrf_protect

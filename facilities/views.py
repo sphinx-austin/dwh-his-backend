@@ -162,8 +162,10 @@ def fill_database(request):
 
 @csrf_exempt
 def facilities(request):
+    facilitiesdata = []
+
     data = json.loads(request.body)
-    print("what was sent back ----------->", data)
+    print("what was sent back ----------->", data, data['OrganizationId'])
 
     if data['OrganizationId']:
         organization = Organizations.objects.select_related('org_access_right').get(
@@ -182,47 +184,42 @@ def facilities(request):
             .select_related('county') \
             .select_related('sub_county')[:100]
 
+    for row in facilities_info:
+        implementation_info = Implementation_type.objects.get(facility_info=row.id)
+        emr_info = EMR_Info.objects.get(facility_info=row.id)
+        hts_info = HTS_Info.objects.get(facility_info=row.id)
+        il_info = IL_Info.objects.get(facility_info=row.id)
+        mhealth_info = MHealth_Info.objects.get(facility_info=row.id)
 
-    facilitiesdata = []
-    try:
-        for row in facilities_info:
-            implementation_info = Implementation_type.objects.get(facility_info=row.id)
-            emr_info = EMR_Info.objects.get(facility_info=row.id)
-            hts_info = HTS_Info.objects.get(facility_info=row.id)
-            il_info = IL_Info.objects.get(facility_info=row.id)
-            mhealth_info = MHealth_Info.objects.get(facility_info=row.id)
+        ct = "CT" if implementation_info.ct else ""
+        hts = "HTS" if implementation_info.hts else ""
+        il = "IL" if implementation_info.il else ""
 
-            ct = "CT" if implementation_info.ct else ""
-            hts = "HTS" if implementation_info.hts else ""
-            il = "IL" if implementation_info.il else ""
+        implementation = [ct, hts, il]
 
-            implementation = [ct, hts, il]
+        dataObj = {}
+        dataObj["id"] = row.id
+        dataObj["mfl_code"] = row.mfl_code
+        dataObj["name"] = row.name
+        dataObj["county"] = row.county.name
+        dataObj["sub_county"] = row.sub_county.name
+        dataObj["owner"] = row.owner.name if row.owner else ""
+        dataObj["lat"] = row.lat if row.lat else ""
+        dataObj["lon"] = row.lon if row.lon else ""
+        dataObj["partner"] = row.partner.name if row.partner else ""
+        dataObj["agency"] = row.partner.agency.name if row.partner and row.partner.agency else ""
+        dataObj["implementation"] = implementation
+        dataObj["emr_type"] = emr_info.type.type if emr_info.type else ""
+        dataObj["emr_status"] = emr_info.status if emr_info.status else ""
+        dataObj["hts_use"] = hts_info.hts_use_name.hts_use_name if hts_info.hts_use_name else ""
+        dataObj["hts_deployment"] = hts_info.deployment.deployment if hts_info.deployment else ""
+        dataObj["hts_status"] = hts_info.status
+        dataObj["il_status"] = il_info.status
+        dataObj["il_registration_ie"] = il_info.webADT_registration
+        dataObj["il_pharmacy_ie"] = il_info.webADT_pharmacy
+        dataObj["mhealth_ovc"] = mhealth_info.Nishauri
 
-            dataObj = {}
-            dataObj["id"] = row.id
-            dataObj["mfl_code"] = row.mfl_code
-            dataObj["name"] = row.name
-            dataObj["county"] = row.county.name
-            dataObj["sub_county"] = row.sub_county.name
-            dataObj["owner"] = row.owner.name if row.owner else ""
-            dataObj["lat"] = row.lat if row.lat else ""
-            dataObj["lon"] = row.lon if row.lon else ""
-            dataObj["partner"] = row.partner.name if row.partner else ""
-            dataObj["agency"] = row.partner.agency.name if row.partner and row.partner.agency else ""
-            dataObj["implementation"] = implementation
-            dataObj["emr_type"] = emr_info.type.type if emr_info.type else ""
-            dataObj["emr_status"] = emr_info.status if emr_info.status else ""
-            dataObj["hts_use"] = hts_info.hts_use_name.hts_use_name if hts_info.hts_use_name else ""
-            dataObj["hts_deployment"] = hts_info.deployment.deployment if hts_info.deployment else ""
-            dataObj["hts_status"] = hts_info.status
-            dataObj["il_status"] = il_info.status
-            dataObj["il_registration_ie"] = il_info.webADT_registration
-            dataObj["il_pharmacy_ie"] = il_info.webADT_pharmacy
-            dataObj["mhealth_ovc"] = mhealth_info.Nishauri
-
-            facilitiesdata.append(dataObj)
-    except Exception as e:
-        print(e)
+        facilitiesdata.append(dataObj)
 
     return JsonResponse(facilitiesdata,safe=False)
 
@@ -958,7 +955,7 @@ def data_for_excel(request):
             facilitiesdata.append(dataObj)
         except Exception as e:
             print('error ----->', e)
-    print(facilitiesdata)
+
     return JsonResponse(facilitiesdata, safe=False)
  # ======================= API =====================
 #
