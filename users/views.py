@@ -29,9 +29,9 @@ def signin(request):
     return redirect(auth_token_url)
 
 
-def signin_oidc(request):
-    # allows frontend to consume access token and return to backen
-    return render(request, 'users/signin_oidc.html')
+# def signin_oidc(request):
+#     # allows frontend to consume access token and return to backen
+#     return render(request, 'users/signin_oidc.html')
 
 
 from django.views.decorators.csrf import csrf_exempt,csrf_protect

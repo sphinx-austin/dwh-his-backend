@@ -29,6 +29,7 @@ unixodbc-dev
 ADD requirements.txt /project
 RUN pip install -r requirements.txt
 RUN pip install mysqlclient
+RUN pip install XlsxWriter
 
 ADD entrypoint.sh /project
 RUN chmod +x *.sh
@@ -38,13 +39,13 @@ COPY . /project
 #RUN mkdir -p /tmp/app/webapp/mysqld && chmod -R 777 /tmp/app/webapp/mysqld
 #ADD mfldbdump.sql /docker-entrypoint-initdb.d
 
-ADD newdata.json /project
+ADD updated_db_data.json /project
 
 # port where the Django app runs
 EXPOSE 8000
 # start server
 #CMD python manage.py makemigrations
 CMD python manage.py migrate
-CMD python manage.py loaddata preloadeddata.json
+CMD python manage.py loaddata updated_db_data.json
 CMD python manage.py runserver 0.0.0.0:8000
 
