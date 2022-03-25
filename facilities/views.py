@@ -410,7 +410,8 @@ def add_facility_data(request):
                                                 pk=int(data['partner'])) if data['partner'] != "" else None,
                                             # facilitydata.agency = facilitydata.partner.agency.name
                                             lat=data['lat'] if data['lat'] else None,
-                                            lon=data['lon'] if data['lon'] else None
+                                            lon=data['lon'] if data['lon'] else None,
+                                            date_added=datetime.now(),
                                             )
 
     # save Implementation info
