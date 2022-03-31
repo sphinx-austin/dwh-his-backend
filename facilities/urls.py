@@ -16,6 +16,7 @@ urlpatterns = [
     path(r'facilities/get_partners_list', views.get_partners_list, name='get_partners_list'),
     path(r'facilities/get_agencies_list', views.get_agencies_list, name='get_agencies_list'),
     path(r'facilities/data_for_excel', views.data_for_excel, name='data_for_excel'),
+path(r'update_kp_implementation', views.update_kp_implementation, name='update_kp_implementation'),
 
     path(r'fill_database', views.fill_database, name='fill_database'),
 path(r'send_email', views.send_email, name='send_email'),
