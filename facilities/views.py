@@ -39,15 +39,27 @@ def test_email(request):
     return 0
 
 
-def send_email(scheme, domain, user_names, facility_id, mfl_code, partner_id):
+@csrf_exempt
+def send_email(request):
+    # print("see whats sent ---->", request.body)
+    data = json.loads(request.body)
+
+    facility_id = data['facility_id']
+    username = data['username']
+    frontend_url = data['frontend_url']
+
+    # print("request.GET['facility_id']", request.GET['facility_id'], request.GET['username'], request.GET['frontend_url'])
+
+    facility = Facility_Info.objects.get(pk=facility_id)
+
     context = {
         'news': 'We have good news!',
-        'url': scheme + "://" + domain + '/facilities/update_facility/',
-        'mfl_code': mfl_code,  # facilitydata.mfl_code,
+        'url': frontend_url + '/facilities/approve_changes/',
+        'mfl_code': facility.mfl_code,  # facilitydata.mfl_code,
         'facility_id': facility_id,  # facilitydata.id
-        'username': user_names
+        'username': username
     }
-    organization = Organization_stewards.objects.get(organization=partner_id)
+    organization = Organization_stewards.objects.get(organization=facility.partner.id)
 
     msg_html = render_to_string('facilities/email_template.html', context)
     msg = EmailMessage(subject="Facility Modified", body=msg_html, from_email=settings.DEFAULT_FROM_EMAIL,
@@ -58,11 +70,12 @@ def send_email(scheme, domain, user_names, facility_id, mfl_code, partner_id):
     return 0
 
 
+
 @csrf_exempt
 def send_customized_email(request):
-    data = json.loads(request.body)
-    print('-----------> ',data['facility_id'])
     if request.method == 'POST':
+        data = json.loads(request.body)
+
         facility_id = data['facility_id']
         choice = data['choice']
         reason = data['reason']
@@ -87,7 +100,7 @@ def send_customized_email(request):
 
         context = {
             'news': 'We have good news!',
-            'url': data['frontend_url'] + '/facilities/update_facility/',
+            'url': "http://localhost:3000" + '/facilities/update_facility/',
             'mfl_code': facilitydata.mfl_code,
             'facility_id': facilitydata.id,
             "message_title": message_title,
@@ -104,6 +117,13 @@ def send_customized_email(request):
         print('-----------> sending customized mail ...', choice)
     return HttpResponse(0)
 
+
+def update_kp_implementation(request):
+    emr_info = EMR_Info.objects.all()
+    for ct_data in emr_info:
+        Implementation_type.objects.filter(facility=facility_to_edit).update(KP=ct_data.kp)
+
+    return 0
 
 def fill_database(request):
     headers = CaseInsensitiveDict()
@@ -159,6 +179,7 @@ def fill_database(request):
                                     facility_info=Facility_Info.objects.get(pk=unique_facility_id)).save()
 
     return HttpResponseRedirect('/home')
+
 
 @csrf_exempt
 def facilities(request):
@@ -354,6 +375,7 @@ def fetch_facility_data(request, facility_id):
     dataObj["HTS"]= implementation_info.hts
     dataObj["IL"]= implementation_info.il
     dataObj["mHealth"] = implementation_info.mhealth
+    dataObj["KP"] = implementation_info.KP
     dataObj["ovc_offered"]= emr_info.ovc
     dataObj["otz_offered"]= emr_info.otz
     dataObj["tb_offered"]= emr_info.tb
@@ -410,11 +432,12 @@ def add_facility_data(request):
                                                 pk=int(data['partner'])) if data['partner'] != "" else None,
                                             # facilitydata.agency = facilitydata.partner.agency.name
                                             lat=data['lat'] if data['lat'] else None,
-                                            lon=data['lon'] if data['lon'] else None
+                                            lon=data['lon'] if data['lon'] else None,
+                                            date_added=datetime.datetime.today(),
                                             )
 
     # save Implementation info
-    implementation_info = Implementation_type(ct=data['CT'],
+    implementation_info = Implementation_type(ct=data['CT'], KP=data['KP'],
                                               hts=data['HTS'], il=data['IL'],
                                               mhealth=data['mHealth'],
                                               for_version="original",
@@ -506,7 +529,8 @@ def check_for_facility_edits(request, facility_id):
 @csrf_exempt
 def update_facility_data(request, facility_id):
     data = json.loads(request.body)
-
+    #print('data ---> ', data)
+    print('data ---> ',data['username'], data['email'])
     # try:
     unique_id_for_edit = uuid.uuid4()
     # Save the new category to the database.
@@ -523,13 +547,13 @@ def update_facility_data(request, facility_id):
                                             lat=data['lat'] if data['lat'] else None,
                                             lon=data['lon'] if data['lon'] else None,
                                             facility_info=Facility_Info.objects.get(pk=facility_id),
-                                            date_edited=datetime.now(),
-                                            user_edited_name='mary kilewe',
-                                            user_edited_email='marykilewe@gmail.com'
+                                            date_edited=datetime.datetime.today(),
+                                            user_edited_name=data['username'],
+                                            user_edited_email=data['email']
                                             )
 
     # save Implementation info
-    implementation_info = Implementation_type(ct=data['CT'],
+    implementation_info = Implementation_type(ct=data['CT'], KP=data["KP"],
                                               hts=data['HTS'], il=data['IL'],
                                               mhealth=data['mHealth'],
                                               for_version="edited",
@@ -556,7 +580,8 @@ def update_facility_data(request, facility_id):
                             status=data['emr_status'],
                             ovc=data['ovc_offered'], otz=data['otz_offered'],
                             prep=data['prep_offered'], tb=data['tb_offered'],
-                            kp=data['kp_offered'], mnch=data['mnch_offered'],
+                            # kp=data['kp_offered'],
+                            mnch=data['mnch_offered'],
                             lab_manifest=None,
                             hiv=data['hiv_offered'], tpt=data['tpt_offered'],
                             covid_19=data['covid_19_offered'], evmmc=data['evmmc_offered'],
@@ -593,22 +618,16 @@ def update_facility_data(request, facility_id):
                                 Psurvey=data['mhealth_psurvey'], Mlab=data['mhealth_mlab'],
                                 for_version="edited",
                                 facility_edits=Edited_Facility_Info.objects.get(pk=unique_id_for_edit))
-    # save to the DB
-    facility.save()
-    implementation_info.save()
-    hts_info.save()
-    emr_info.save()
-    il_info.save()
-    mhealth_info.save()
 
     try:
+        # save to the DB
+        facility.save()
+        implementation_info.save()
+        hts_info.save()
+        emr_info.save()
+        il_info.save()
+        mhealth_info.save()
 
-        #send email after updates
-        org_partner = int(data['partner'])
-        facilitydata = Facility_Info.objects.get(pk=facility_id)
-
-        send_email(request.scheme, request.META['HTTP_HOST'], 'mary kilewe 2nd', facility_id,
-                   facilitydata.mfl_code, org_partner)
         return JsonResponse({'status_code': 200, 'redirect_url': 'home/'})
     except Exception as e:
         print(e)
@@ -616,73 +635,81 @@ def update_facility_data(request, facility_id):
 
 
 def fetch_edited_data(request, facility_id):
-    facility_info = Edited_Facility_Info.objects.prefetch_related('partner') \
-            .select_related('owner').select_related('county')\
-            .select_related('sub_county').get(facility_info=facility_id)
-
     edited_data = []
-    # try:
-    implementation_info = Implementation_type.objects.get(facility_edits=facility_info.id)
-    emr_info = EMR_Info.objects.get(facility_edits=facility_info.id)
-    hts_info = HTS_Info.objects.get(facility_edits=facility_info.id)
-    il_info = IL_Info.objects.get(facility_edits=facility_info.id)
-    mhealth_info = MHealth_Info.objects.get(facility_edits=facility_info.id)
 
-    ct = "CT" if implementation_info.ct else ""
-    hts = "HTS" if implementation_info.hts else ""
-    il = "IL" if implementation_info.il else ""
+    try:
+        facility_info = Edited_Facility_Info.objects.prefetch_related('partner') \
+                .select_related('owner').select_related('county')\
+                .select_related('sub_county').get(facility_info=facility_id)
 
-    implementation = [ct, hts, il]
+        # try:
+        implementation_info = Implementation_type.objects.get(facility_edits=facility_info.id)
+        emr_info = EMR_Info.objects.get(facility_edits=facility_info.id)
+        hts_info = HTS_Info.objects.get(facility_edits=facility_info.id)
+        il_info = IL_Info.objects.get(facility_edits=facility_info.id)
+        mhealth_info = MHealth_Info.objects.get(facility_edits=facility_info.id)
 
-    dataObj = {}
-    dataObj["id"] = facility_info.id
-    dataObj["mfl_code"] = facility_info.mfl_code
-    dataObj["name"] = facility_info.name
-    dataObj["county"] = facility_info.county.id
-    dataObj["sub_county"] = facility_info.sub_county.id
-    dataObj["owner"] = facility_info.owner.id if facility_info.owner else ""
-    dataObj["lat"] = facility_info.lat if facility_info.lat else ""
-    dataObj["lon"] = facility_info.lon if facility_info.lon else ""
-    dataObj["partner"] = facility_info.partner.id if facility_info.partner else ""
-    dataObj["agency"] = facility_info.partner.agency.name if facility_info.partner and facility_info.partner.agency else ""
-    dataObj["CT"]= implementation_info.ct
-    dataObj["HTS"]= implementation_info.hts
-    dataObj["IL"]= implementation_info.il
-    dataObj["mHealth"] = implementation_info.mhealth
-    dataObj["ovc_offered"]= emr_info.ovc
-    dataObj["otz_offered"]= emr_info.otz
-    dataObj["tb_offered"]= emr_info.tb
-    dataObj["prep_offered"]= emr_info.prep
-    dataObj["mnch_offered"]= emr_info.mnch
-    dataObj["kp_offered"]= emr_info.kp
-    dataObj["lab_man_offered"]= emr_info.lab_manifest
-    dataObj["hiv_offered"] = emr_info.hiv
-    dataObj["tpt_offered"] = emr_info.tpt
-    dataObj["covid_19_offered"] = emr_info.covid_19
-    dataObj["evmmc_offered"] = emr_info.evmmc
-    dataObj["mhealth_ushauri"]= mhealth_info.Ushauri
-    dataObj["mhealth_nishauri"]= mhealth_info.Nishauri
-    dataObj["mhealth_c4c"]= mhealth_info.C4C
-    dataObj["mhealth_mlab"]= mhealth_info.Mlab
-    dataObj["mhealth_psurvey"]= mhealth_info.Psurvey
-    dataObj["mhealth_art"]= mhealth_info.ART_Directory
-    dataObj["il_status"]= il_info.status
-    dataObj["webADT_registration"]= il_info.webADT_registration
-    dataObj["webADT_pharmacy"]= il_info.webADT_pharmacy
-    dataObj["il_three_PM"]= il_info.three_PM
-    dataObj["il_air"] = il_info.air
-    dataObj["il_ushauri"] = il_info.Ushauri
-    dataObj["il_mlab"] = il_info.Mlab
-    dataObj["il_lab_manifest"] = il_info.lab_manifest
-    dataObj["il_nimeconfirm"] = il_info.nimeconfirm
-    dataObj["emr_type"]= emr_info.type.id if emr_info.type else ""
-    dataObj["emr_status"]= emr_info.status
-    dataObj["hts_use"]= hts_info.hts_use_name.id if hts_info.hts_use_name else ""
-    dataObj["hts_deployment"]= hts_info.deployment.id if hts_info.deployment else ""
-    dataObj["hts_status"]= hts_info.status
-    edited_data.append(dataObj)
-    # except Exception as e:
-    #     print(e)
+        org_steward = Organization_stewards.objects.get(organization=facility_info.partner.id)
+
+        ct = "CT" if implementation_info.ct else ""
+        hts = "HTS" if implementation_info.hts else ""
+        il = "IL" if implementation_info.il else ""
+
+        implementation = [ct, hts, il]
+
+        dataObj = {}
+        dataObj["org_steward_email"] = org_steward.email
+        dataObj["id"] = facility_info.id
+        dataObj["mfl_code"] = facility_info.mfl_code
+        dataObj["name"] = facility_info.name
+        dataObj["county"] = facility_info.county.id
+        dataObj["sub_county"] = facility_info.sub_county.id
+        dataObj["owner"] = facility_info.owner.id if facility_info.owner else ""
+        dataObj["lat"] = facility_info.lat if facility_info.lat else ""
+        dataObj["lon"] = facility_info.lon if facility_info.lon else ""
+        dataObj["partner"] = facility_info.partner.id if facility_info.partner else ""
+        dataObj["agency"] = facility_info.partner.agency.name if facility_info.partner and facility_info.partner.agency else ""
+        dataObj["CT"]= implementation_info.ct
+        dataObj["HTS"]= implementation_info.hts
+        dataObj["IL"]= implementation_info.il
+        dataObj["mHealth"] = implementation_info.mhealth
+        dataObj["KP"] = implementation_info.KP
+        dataObj["ovc_offered"]= emr_info.ovc
+        dataObj["otz_offered"]= emr_info.otz
+        dataObj["tb_offered"]= emr_info.tb
+        dataObj["prep_offered"]= emr_info.prep
+        dataObj["mnch_offered"]= emr_info.mnch
+        dataObj["kp_offered"]= emr_info.kp
+        dataObj["lab_man_offered"]= emr_info.lab_manifest
+        dataObj["hiv_offered"] = emr_info.hiv
+        dataObj["tpt_offered"] = emr_info.tpt
+        dataObj["covid_19_offered"] = emr_info.covid_19
+        dataObj["evmmc_offered"] = emr_info.evmmc
+        dataObj["mhealth_ushauri"]= mhealth_info.Ushauri
+        dataObj["mhealth_nishauri"]= mhealth_info.Nishauri
+        dataObj["mhealth_c4c"]= mhealth_info.C4C
+        dataObj["mhealth_mlab"]= mhealth_info.Mlab
+        dataObj["mhealth_psurvey"]= mhealth_info.Psurvey
+        dataObj["mhealth_art"]= mhealth_info.ART_Directory
+        dataObj["il_status"]= il_info.status
+        dataObj["webADT_registration"]= il_info.webADT_registration
+        dataObj["webADT_pharmacy"]= il_info.webADT_pharmacy
+        dataObj["il_three_PM"]= il_info.three_PM
+        dataObj["il_air"] = il_info.air
+        dataObj["il_ushauri"] = il_info.Ushauri
+        dataObj["il_mlab"] = il_info.Mlab
+        dataObj["il_lab_manifest"] = il_info.lab_manifest
+        dataObj["il_nimeconfirm"] = il_info.nimeconfirm
+        dataObj["emr_type"]= emr_info.type.id if emr_info.type else ""
+        dataObj["emr_status"]= emr_info.status
+        dataObj["hts_use"]= hts_info.hts_use_name.id if hts_info.hts_use_name else ""
+        dataObj["hts_deployment"]= hts_info.deployment.id if hts_info.deployment else ""
+        dataObj["hts_status"]= hts_info.status
+
+        dataObj["Edit_Exists"] =True
+        edited_data.append(dataObj)
+    except Edited_Facility_Info.DoesNotExist:
+        edited_data = [{"Edit_Exists": False}]
 
     return JsonResponse(edited_data,safe=False)
 
@@ -716,7 +743,7 @@ def approve_facility_changes(request, facility_id):
         # save Implementation info
         Implementation_type.objects.filter(facility_info=facility_id).update(ct=data['CT'],
                                                   hts=data['HTS'], il=data['IL'], mhealth=data['mHealth'],
-                                                  for_version="original")
+                                                  KP = data["KP"], for_version="original")
 
         if data['HTS'] == True:
             # save HTS info
@@ -736,7 +763,8 @@ def approve_facility_changes(request, facility_id):
                                 status=data['emr_status'],
                                 ovc=data['ovc_offered'], otz=data['otz_offered'],
                                 prep=data['prep_offered'], tb=data['tb_offered'],
-                                kp=data['kp_offered'], mnch=data['mnch_offered'],
+                                # kp=data['kp_offered'],
+                                mnch=data['mnch_offered'],
                                 lab_manifest=None,
                                  hiv=data['hiv_offered'], tpt=data['tpt_offered'],
                                  covid_19=data['covid_19_offered'], evmmc=data['evmmc_offered'],
@@ -813,6 +841,7 @@ def view_facility_data(request, facility_id):
         'HTS': implementation_info.hts,
         'IL':  implementation_info.il,
         'mHealth': implementation_info.mhealth,
+        "KP" : implementation_info.KP,
         'ovc_offered': emr_info.ovc,
         'otz_offered': emr_info.otz,
         'tb_offered': emr_info.tb,
@@ -871,10 +900,12 @@ def partners(request):
 def edit_partner(request, partner_id):
 
     partner_query = Partners.objects.prefetch_related('agency').get(pk=partner_id)
+    org_steward = Organization_stewards.objects.select_related('organization').get(organization__id=partner_id)
     partObj = {}
 
     partObj['id'] = partner_query.id
     partObj['partner'] = partner_query.name
+    partObj['org_steward_email'] = (org_steward.email).strip()
     partObj['agency'] = partner_query.agency.name if partner_query.agency else ""
     partObj['agency_id'] = partner_query.agency.id if partner_query.agency else ""
 
@@ -924,11 +955,13 @@ def data_for_excel(request):
         il_info = IL_Info.objects.get(facility_info=row.id)
         mhealth_info = MHealth_Info.objects.get(facility_info=row.id)
 
-        ct = "CT" if implementation_info.ct else ""
-        hts = "HTS" if implementation_info.hts else ""
-        il = "IL" if implementation_info.il else ""
+        ct = "CT " if implementation_info.ct else ""
+        hts = "HTS " if implementation_info.hts else ""
+        il = "IL " if implementation_info.il else ""
+        mhealth = "MHealth " if implementation_info.mhealth else ""
+        KP = "KP " if implementation_info.KP else ""
 
-        implementation = [ct, hts, il]
+        implementation = ct + hts + il + mhealth + KP
 
         try:
             dataObj = {}
@@ -950,7 +983,37 @@ def data_for_excel(request):
             dataObj["il_status"] = il_info.status
             dataObj["il_registration_ie"] = il_info.webADT_registration
             dataObj["il_pharmacy_ie"] = il_info.webADT_pharmacy
-            dataObj["mhealth_ovc"] = mhealth_info.Nishauri
+            dataObj["ovc_offered"] = emr_info.ovc
+            dataObj["otz_offered"] = emr_info.otz
+            dataObj["tb_offered"] = emr_info.tb
+            dataObj["prep_offered"] = emr_info.prep
+            dataObj["mnch_offered"] = emr_info.mnch
+            dataObj["kp_offered"] = emr_info.kp
+            dataObj["lab_man_offered"] = emr_info.lab_manifest
+            dataObj["hiv_offered"] = emr_info.hiv
+            dataObj["tpt_offered"] = emr_info.tpt
+            dataObj["covid_19_offered"] = emr_info.covid_19
+            dataObj["evmmc_offered"] = emr_info.evmmc
+            dataObj["mhealth_ushauri"] = mhealth_info.Ushauri
+            dataObj["mhealth_nishauri"] = mhealth_info.Nishauri
+            dataObj["mhealth_c4c"] = mhealth_info.C4C
+            dataObj["mhealth_mlab"] = mhealth_info.Mlab
+            dataObj["mhealth_psurvey"] = mhealth_info.Psurvey
+            dataObj["mhealth_art"] = mhealth_info.ART_Directory
+            dataObj["il_status"] = il_info.status
+            dataObj["webADT_registration"] = il_info.webADT_registration
+            dataObj["webADT_pharmacy"] = il_info.webADT_pharmacy
+            dataObj["il_three_PM"] = il_info.three_PM
+            dataObj["il_air"] = il_info.air
+            dataObj["il_ushauri"] = il_info.Ushauri
+            dataObj["il_mlab"] = il_info.Mlab
+            dataObj["il_lab_manifest"] = il_info.lab_manifest
+            dataObj["il_nimeconfirm"] = il_info.nimeconfirm
+            dataObj["emr_type"] = emr_info.type.type if emr_info.type else ""
+            dataObj["emr_status"] = emr_info.status
+            dataObj["hts_use"] = hts_info.hts_use_name.hts_use_name if hts_info.hts_use_name else ""
+            dataObj["hts_deployment"] = hts_info.deployment.deployment if hts_info.deployment else ""
+            dataObj["hts_status"] = hts_info.status
 
             facilitiesdata.append(dataObj)
         except Exception as e:

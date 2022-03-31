@@ -1,6 +1,7 @@
 from django.db import models
 import uuid
-from datetime import datetime
+# from datetime import datetime
+import datetime
 from django.conf import settings
 # Create your models here.
 
@@ -84,6 +85,9 @@ class Facility_Info(models.Model):
     lon = models.DecimalField(max_digits=13, decimal_places=10, default=None, blank=True, null=True)
     partner = models.ForeignKey(Partners, on_delete=models.CASCADE, default=None, blank=True, null=True)
     owner = models.ForeignKey(Owner, on_delete=models.CASCADE, default=None, blank=True, null=True)
+    date_added = models.DateTimeField(default=datetime.datetime.today(), blank=True, null=True)
+    year = models.IntegerField(default=datetime.datetime.today().year, blank=True, null=True)
+    month = models.IntegerField(default=datetime.datetime.today().month, blank=True, null=True)
     kmhfltest_id = models.UUIDField(default=None, editable=False, blank=True, null=True)
 
 
@@ -99,7 +103,7 @@ class Edited_Facility_Info(models.Model):
     partner = models.ForeignKey(Partners, on_delete=models.CASCADE, default=None, blank=True, null=True)
     owner = models.ForeignKey(Owner, on_delete=models.CASCADE)
     facility_info = models.ForeignKey(Facility_Info, on_delete=models.CASCADE)
-    date_edited = models.DateTimeField(default=datetime.now, blank=True, null=True)
+    date_edited = models.DateTimeField(default=datetime.datetime.today(), blank=True, null=True)
     # user_edited = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, default=None, blank=True, null=True) #id of who edited
     user_edited_name = models.CharField(max_length=100, default=None)
     user_edited_email = models.CharField(max_length=100, default=None)
@@ -171,6 +175,7 @@ class Implementation_type(models.Model):
     hts = models.BooleanField(default=False, blank=True, null=True)
     il = models.BooleanField(default=False, blank=True, null=True)
     mhealth = models.BooleanField(default=False, blank=True, null=True)
+    KP = models.BooleanField(default=False, blank=True, null=True)
     for_version = models.CharField(max_length=20, default="original")
     facility_info = models.ForeignKey(Facility_Info, on_delete=models.CASCADE, default=None, blank=True, null=True)
     facility_edits = models.ForeignKey(Edited_Facility_Info, on_delete=models.CASCADE, default=None, blank=True, null=True)
