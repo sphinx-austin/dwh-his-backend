@@ -199,11 +199,11 @@ def facilities(request):
         else:
             facilities_info = Facility_Info.objects.prefetch_related('partner') \
                 .select_related('county') \
-                .select_related('sub_county')[:100]
+                .select_related('sub_county')
     else:
         facilities_info = Facility_Info.objects.prefetch_related('partner') \
             .select_related('county') \
-            .select_related('sub_county')[:100]
+            .select_related('sub_county')
 
     for row in facilities_info:
         implementation_info = Implementation_type.objects.get(facility_info=row.id)
