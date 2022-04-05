@@ -16,11 +16,13 @@ urlpatterns = [
     path(r'facilities/get_partners_list', views.get_partners_list, name='get_partners_list'),
     path(r'facilities/get_agencies_list', views.get_agencies_list, name='get_agencies_list'),
     path(r'facilities/data_for_excel', views.data_for_excel, name='data_for_excel'),
-path(r'update_kp_implementation', views.update_kp_implementation, name='update_kp_implementation'),
+    path(r'update_kp_implementation', views.update_kp_implementation, name='update_kp_implementation'),
+    path(r'send_email', views.send_email, name='send_email'),
+    path(r'send_customized_email', views.send_customized_email, name='send_customized_email'),
+    path(r'test_email', views.test_email, name='test_email'),
+
 
     path(r'fill_database', views.fill_database, name='fill_database'),
-path(r'send_email', views.send_email, name='send_email'),
-path(r'send_customized_email', views.send_customized_email, name='send_customized_email'),
 path(r'facilities', views.facilities, name='facilities'),
 path(r'facilities/emr_types', views.emr_types, name='emr_types'),
 path(r'facilities/hts_deployment_types', views.hts_deployment_types, name='hts_deployment_types'),
