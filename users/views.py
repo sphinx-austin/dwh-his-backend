@@ -35,7 +35,7 @@ def signin_oidc(request):
 
 
 def redirect_to_frontend(request):
-    return HttpResponseRedirect('http://localhost:3000')
+    return HttpResponseRedirect('https://prod.kenyahmis.org:3001/')
 
 
 from django.views.decorators.csrf import csrf_exempt,csrf_protect

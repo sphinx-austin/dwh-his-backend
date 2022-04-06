@@ -32,7 +32,7 @@
     base_url= window.location.origin;
     $.post( base_url+"/store_tokens", params )
       .done(function() {
-        $(location).attr("href", "http://localhost:3000/signin-oidc#"+spliturl[0] +"&"+ spliturl[1] +"&"+
+        $(location).attr("href", "https://prod.kenyahmis.org:3001/signin-oidc#"+spliturl[0] +"&"+ spliturl[1] +"&"+
         spliturl[2] +"&"+ spliturl[3] +"&"+ spliturl[4] +"&"+ spliturl[5] +"&"+ spliturl[6]);
       })
 
