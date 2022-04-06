@@ -63,7 +63,7 @@ def send_email(request):
 
     msg_html = render_to_string('facilities/email_template.html', context)
     msg = EmailMessage(subject="Facility Modified", body=msg_html, from_email=settings.DEFAULT_FROM_EMAIL,
-                       bcc=['marykilewe@gmail.com'])  # , organization.email
+                       bcc=['marykilewe@gmail.com', organization.email])  # , organization.email
     msg.content_subtype = "html"  # Main content is now text/html
     msg.send()
     print('-----------> sending mail ...', organization.email)
