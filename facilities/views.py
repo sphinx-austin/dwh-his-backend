@@ -63,7 +63,7 @@ def send_email(request):
 
     msg_html = render_to_string('facilities/email_template.html', context)
     msg = EmailMessage(subject="Facility Modified", body=msg_html, from_email=settings.DEFAULT_FROM_EMAIL,
-                       bcc=['marykilewe@gmail.com'])  # , organization.email
+                       bcc=['marykilewe@gmail.com', organization.email])  # , organization.email
     msg.content_subtype = "html"  # Main content is now text/html
     msg.send()
     print('-----------> sending mail ...', organization.email)
@@ -100,7 +100,7 @@ def send_customized_email(request):
 
         context = {
             'news': 'We have good news!',
-            'url': "http://localhost:3000" + '/facilities/update_facility/',
+            'url': "https://prod.kenyahmis.org:3001" + '/facilities/update_facility/',
             'mfl_code': facilitydata.mfl_code,
             'facility_id': facilitydata.id,
             "message_title": message_title,
@@ -199,11 +199,11 @@ def facilities(request):
         else:
             facilities_info = Facility_Info.objects.prefetch_related('partner') \
                 .select_related('county') \
-                .select_related('sub_county')[:100]
+                .select_related('sub_county')
     else:
         facilities_info = Facility_Info.objects.prefetch_related('partner') \
             .select_related('county') \
-            .select_related('sub_county')[:100]
+            .select_related('sub_county')
 
     for row in facilities_info:
         implementation_info = Implementation_type.objects.get(facility_info=row.id)
