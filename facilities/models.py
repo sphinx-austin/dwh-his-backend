@@ -39,6 +39,11 @@ class Organization_stewards(models.Model):
     tel_no = models.IntegerField(default=None, blank=True, null=True)
 
 
+class Organization_HIS_approvers(models.Model):
+    organization = models.ForeignKey(Partners, on_delete=models.CASCADE)
+    email = models.CharField(max_length=100, default=None, blank=True, null=True)
+
+
 class EMR_type(models.Model):
     type = models.CharField(max_length=100)
 
