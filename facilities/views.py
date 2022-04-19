@@ -59,14 +59,14 @@ def send_email(request):
         'facility_id': facility_id,  # facilitydata.id
         'username': username
     }
-    organization = Organization_stewards.objects.get(organization=facility.partner.id)
-
+    his_approver = Organization_HIS_approvers.objects.get(organization=facility.partner.id)
+    print('-----------> sending mail ...', his_approver.email)
     msg_html = render_to_string('facilities/email_template.html', context)
     msg = EmailMessage(subject="Facility Modified", body=msg_html, from_email=settings.DEFAULT_FROM_EMAIL,
-                       bcc=['marykilewe@gmail.com', organization.email])  # , organization.email
+                       bcc=['marykilewe@gmail.com', his_approver.email])  # , organization.email
     msg.content_subtype = "html"  # Main content is now text/html
     msg.send()
-    print('-----------> sending mail ...', organization.email)
+    print('-----------> sending mail ...', his_approver.email)
     return 0
 
 
@@ -246,6 +246,10 @@ def facilities(request):
     return JsonResponse(facilitiesdata,safe=False)
 
 
+def org_stewards_and_HISapprovers(request):
+    allowed_users = [i.email for i in Organization_stewards.objects.all()] + [i.email for i in Organization_HIS_approvers.objects.all()]
+    return JsonResponse(allowed_users, safe=False)
+
 
 def emr_types(request):
     emr_types = [["", ""]] + [(i.id, i.type) for i in EMR_type.objects.all()]
@@ -412,7 +416,7 @@ def fetch_facility_data(request, facility_id):
     facility_data.append(dataObj)
     # except Exception as e:
     #     print(e)
-    print('facility_data --------------->- ',facility_data)
+
     return JsonResponse(facility_data,safe=False)
 
 
@@ -651,7 +655,7 @@ def fetch_edited_data(request, facility_id):
         il_info = IL_Info.objects.get(facility_edits=facility_info.id)
         mhealth_info = MHealth_Info.objects.get(facility_edits=facility_info.id)
 
-        org_steward = Organization_stewards.objects.get(organization=facility_info.partner.id)
+        org_his_approver = Organization_HIS_approvers.objects.get(organization=facility_info.partner.id)
 
         ct = "CT" if implementation_info.ct else ""
         hts = "HTS" if implementation_info.hts else ""
@@ -660,7 +664,7 @@ def fetch_edited_data(request, facility_id):
         implementation = [ct, hts, il]
 
         dataObj = {}
-        dataObj["org_steward_email"] = org_steward.email
+        dataObj["org_his_approver_email"] = org_his_approver.email if org_his_approver else None
         dataObj["id"] = facility_info.id
         dataObj["mfl_code"] = facility_info.mfl_code
         dataObj["name"] = facility_info.name
