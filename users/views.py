@@ -7,6 +7,12 @@ from requests.structures import CaseInsensitiveDict
 import requests
 import json
 
+# get environment variables
+import environ
+env = environ.Env()
+environ.Env.read_env()
+
+
 
 
 def signin(request):
@@ -35,7 +41,7 @@ def signin_oidc(request):
 
 
 def redirect_to_frontend(request):
-    return HttpResponseRedirect('https://prod.kenyahmis.org:3001/')
+    return HttpResponseRedirect(env("APP_FRONTEND_URL"))
 
 
 from django.views.decorators.csrf import csrf_exempt,csrf_protect

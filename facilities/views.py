@@ -16,6 +16,10 @@ import requests
 import json
 
 
+# get environment variables
+import environ
+env = environ.Env()
+environ.Env.read_env()
 
 
 def test_email(request):
@@ -100,7 +104,7 @@ def send_customized_email(request):
 
         context = {
             'news': 'We have good news!',
-            'url': "https://prod.kenyahmis.org:3001" + '/facilities/update_facility/',
+            'url': env("APP_FRONTEND_URL") + '/facilities/update_facility/',
             'mfl_code': facilitydata.mfl_code,
             'facility_id': facilitydata.id,
             "message_title": message_title,
