@@ -6,7 +6,7 @@ from . import views
 
 
 urlpatterns = [
-    path('', views.redirect_to_frontend, name='redirect_to_frontend'),
+    # path('', views.redirect_to_frontend, name='redirect_to_frontend'),
     path('signin/', views.signin, name='signin'),
     # path('connect/authorize/callback/', views.signup_callback, name='signup_callback'),
     path('signin-oidc', views.signin_oidc, name='signin_oidc'),
