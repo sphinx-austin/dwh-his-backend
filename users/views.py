@@ -39,9 +39,9 @@ environ.Env.read_env()
 #     # allows frontend to consume access token and return to backen
 #     return render(request, 'users/signin_oidc.html')
 #
-#
-# def redirect_to_frontend(request):
-#     return HttpResponseRedirect(env("APP_FRONTEND_URL"))
+
+def test(request):
+    return 0
 
 
 from django.views.decorators.csrf import csrf_exempt,csrf_protect
