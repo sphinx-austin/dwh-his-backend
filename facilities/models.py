@@ -112,6 +112,7 @@ class Edited_Facility_Info(models.Model):
     # user_edited = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, default=None, blank=True, null=True) #id of who edited
     user_edited_name = models.CharField(max_length=100, default=None)
     user_edited_email = models.CharField(max_length=100, default=None)
+    # approved = models.BooleanField(default=False, blank=True, null=True)
 
 
 
