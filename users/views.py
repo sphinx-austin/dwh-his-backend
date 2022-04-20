@@ -105,4 +105,4 @@ def logout_user(request):
     # except KeyError:
     #     pass
 
-    return HttpResponseRedirect(url)
+    return HttpResponseRedirect('/')
