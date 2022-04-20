@@ -94,6 +94,7 @@ class Facility_Info(models.Model):
     year = models.IntegerField(default=datetime.datetime.today().year, blank=True, null=True)
     month = models.IntegerField(default=datetime.datetime.today().month, blank=True, null=True)
     kmhfltest_id = models.UUIDField(default=None, editable=False, blank=True, null=True)
+    approved = models.BooleanField(default=False, blank=True, null=True)
 
 
 class Edited_Facility_Info(models.Model):

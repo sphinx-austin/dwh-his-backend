@@ -20,6 +20,8 @@ urlpatterns = [
     path(r'send_email', views.send_email, name='send_email'),
     path(r'send_customized_email', views.send_customized_email, name='send_customized_email'),
     path(r'test_email', views.test_email, name='test_email'),
+    path(r'new_facility_send_email', views.new_facility_send_email, name='new_facility_send_email'),
+    path(r'facilities/delete_facility/<uuid:facility_id>', views.delete_facility, name='delete_facility'),
 
     path(r'fill_database', views.fill_database, name='fill_database'),
     path(r'facilities', views.facilities, name='facilities'),

@@ -47,7 +47,6 @@
         .text-white{
             color: white !important;
         }
-        .clearBoth { clear:both; }
     </style>
 
 </head>
@@ -56,29 +55,11 @@
         <h3><i class="fa-solid fa-books-medical text-white"></i> DWH-HIS Management Portal</h3>
     </div>
     <section style="margin-left:50px; margin-right:50px;">
-        {% load static %}
-        <div>
-            {% if choice == "approved" %}
-<!--                <object type="image/svg+xml" data="{% static 'icons/reshot-icon-check-SKUA2PMXWE.svg'%}" style="float:left; height:30px; width:30px; margin:auto"></object>- -->
-                <h4 class="green_text_color" style="float:left">&#10004; {{message_title}}</h4>
-            {% else %}
-<!--                <object type="image/svg+xml" data="{% static 'icons/reshot-icon-cancel-UJ83M97HRA.svg'%}" style="float:left;height:30px; width:30px; margin:auto"></object>-->
-                <h4 style="float:left; color:#b02a37">&#10006; {{message_title}}</h4>
-            {% endif %}
-        </div>
-
-        <br class="clearBoth">
-
-        <p>You are receiving this email because you requested approval for edits made to Facility with MFL code <b class="green_text_color">{{mfl_code}}</b>.
-           Your edits were {{choice}}. {{message}}
-        </p><br>
-
-        {% if reason != "" %}
-            <i><blockquote>{{reason_given}}</blockquote></i>
-        {% endif %}
-
-
-        <p>To view Facility navigate to <a href="{{url}}?next={{url}}" target="_blank"><button class="green_bg_color">Facility Info</button></a></p>
+        <h4>Greetings!</h4>
+        <p>You are receiving this email because a Facility with MFL code <b class="green_text_color">{{mfl_code}}</b>
+            has been added by user <b>{{username}}</b>. Please review this facility and approve it before the facility's data can be reflected on the portal.
+        </p>
+        <p>To view changes navigate to <a href="{{url}}{{facility_id}}?next={{url}}{{facility_id}}" target="_blank"><button class="green_bg_color">Facility Edits</button></a></p>
 
     </section>
 </body>
