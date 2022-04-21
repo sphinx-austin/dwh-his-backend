@@ -363,7 +363,7 @@ def get_mfl_data(request):
     if request.method == 'POST':
 
         try:
-            Facility_Info.objects.get(mfl_code=int(data['code']))
+            Facility_Info.objects.get(mfl_code=int(data['code']), approved=True)
             facilityObj = {"status": 'data exists'}
         except Facility_Info.DoesNotExist:
             try:
