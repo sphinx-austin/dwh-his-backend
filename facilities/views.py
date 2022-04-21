@@ -223,7 +223,7 @@ def facilities(request):
     data = json.loads(request.body)
     print("what was sent back ----------->", data, data['OrganizationId'])
 
-    if data['OrganizationId']:
+    if data['OrganizationId'] != None:
         organization = Organizations.objects.select_related('org_access_right').get(
             organization_id=data['OrganizationId'])
 
@@ -980,7 +980,7 @@ def edit_partner(request, partner_id):
 def data_for_excel(request):
     data = json.loads(request.body)
 
-    if data['OrganizationId']:
+    if data['OrganizationId'] != None:
         organization = Organizations.objects.select_related('org_access_right').get(
             organization_id=data['OrganizationId'])
 
