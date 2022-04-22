@@ -308,15 +308,20 @@ def delete_facility(request, facility_id):
 
     return HttpResponseRedirect('/home')
 
-def org_stewards_and_HISapprovers(request):
-    stewards = []
-    for i in Organization_stewards.objects.all():
-        stewards.append(i.email.lower() if i.email else None)
 
-    approvers = []
-    for i in Organization_HIS_approvers.objects.all():
-        approvers.append(i.email.lower() if i.email else None)
-    allowed_users = stewards + approvers
+@csrf_exempt
+def org_stewards_and_HISapprovers(request):
+    data = json.loads(request.body)
+
+    allowed_users = []
+
+    organization = Organizations.objects.get(organization_id=data["orgId"])
+    if organization.org_access_right != None:
+        steward_email = Organization_stewards.objects.get(organization=organization.org_access_right)
+        allowed_users.append(steward_email.email.lower() if steward_email else None)
+
+        approver_email = Organization_HIS_approvers.objects.get(organization=organization.org_access_right)
+        allowed_users.append(approver_email.email.lower() if approver_email else None)
     return JsonResponse(allowed_users, safe=False)
 
 
