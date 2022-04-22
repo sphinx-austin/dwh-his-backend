@@ -288,7 +288,7 @@ def facilities(request):
             agency = ""
 
         dataObj = {}
-        dataObj["id"] = row[0]
+        dataObj["id"] = uuid.UUID(row[0])
         dataObj["mfl_code"] = row[1]
         dataObj["name"] = row[2]
         dataObj["county"] = row[3]
