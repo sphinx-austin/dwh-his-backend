@@ -264,7 +264,7 @@ def facilities(request):
                                'ON facilities_sub_counties.id = facilities_facility_info.sub_county_id '
                                'JOIN facilities_implementation_type '
                                'ON facilities_implementation_type.facility_info_id = facilities_facility_info.id '
-                               'where facilities_partners.id = '+ str(organization.org_access_right.id) +' and facilities_facility_info.approved = True;')
+                               'where facilities_facility_info.partner_id = '+ str(organization.org_access_right.id) +' and facilities_facility_info.approved = True;')
                 facilities_info = cursor.fetchall()
         else:
             facilities_info = default_all_facilities_data
@@ -1043,7 +1043,7 @@ def data_for_excel(request):
                                'ON facilities_sub_counties.id = facilities_facility_info.sub_county_id '
                                'JOIN facilities_implementation_type '
                                'ON facilities_implementation_type.facility_info_id = facilities_facility_info.id '
-                               'where facilities_partners.id = ' + str(organization.org_access_right.id) +
+                               'where facilities_facility_info.partner_id = ' + str(organization.org_access_right.id) +
                                ' and facilities_facility_info.approved = True;')
                 facilities_info = cursor.fetchall()
         else:
@@ -1141,9 +1141,8 @@ def data_for_excel(request):
 
             facilitiesdata.append(dataObj)
         except Exception as e:
-            # print('error ----->', e)
-            pass
-    print('-------------------->', facilitiesdata)
+            print('error ----->', e)
+
     return JsonResponse(facilitiesdata, safe=False)
  # ======================= API =====================
 #
