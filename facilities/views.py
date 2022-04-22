@@ -309,7 +309,14 @@ def delete_facility(request, facility_id):
     return HttpResponseRedirect('/home')
 
 def org_stewards_and_HISapprovers(request):
-    allowed_users = [i.email for i in Organization_stewards.objects.all()] + [i.email for i in Organization_HIS_approvers.objects.all()]
+    stewards = []
+    for i in Organization_stewards.objects.all():
+        stewards.append(i.email.lower() if i.email else None)
+
+    approvers = []
+    for i in Organization_HIS_approvers.objects.all():
+        approvers.append(i.email.lower() if i.email else None)
+    allowed_users = stewards + approvers
     return JsonResponse(allowed_users, safe=False)
 
 
