@@ -94,6 +94,7 @@ class Facility_Info(models.Model):
     year = models.IntegerField(default=datetime.datetime.today().year, blank=True, null=True)
     month = models.IntegerField(default=datetime.datetime.today().month, blank=True, null=True)
     kmhfltest_id = models.UUIDField(default=None, editable=False, blank=True, null=True)
+    approved = models.BooleanField(default=False, blank=True, null=True)
 
 
 class Edited_Facility_Info(models.Model):
@@ -112,6 +113,7 @@ class Edited_Facility_Info(models.Model):
     # user_edited = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, default=None, blank=True, null=True) #id of who edited
     user_edited_name = models.CharField(max_length=100, default=None)
     user_edited_email = models.CharField(max_length=100, default=None)
+    # approved = models.BooleanField(default=False, blank=True, null=True)
 
 
 
