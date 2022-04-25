@@ -5,7 +5,7 @@ from django.template.loader import render_to_string
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import get_template
 from django.template import Context
-
+from django.db import connection
 from django.conf import settings
 from django.http import JsonResponse
 
@@ -221,64 +221,86 @@ def facilities(request):
     facilitiesdata = []
 
     data = json.loads(request.body)
-    print("what was sent back ----------->", data, data['OrganizationId'])
+    # print("what was sent back ----------->", data, data['OrganizationId'])
+
+    with connection.cursor() as cursor:
+        cursor.execute('SELECT facilities_facility_info.id, facilities_facility_info.mfl_code, '
+                       'facilities_facility_info.name, facilities_counties.name, facilities_sub_counties.name,'
+                       'facilities_facility_info.partner_id, facilities_owner.name,  '
+                       'facilities_facility_info.lat, facilities_facility_info.lon, '
+                       'facilities_implementation_type.ct, facilities_implementation_type.hts, facilities_implementation_type.il, '
+                       'facilities_implementation_type.mHealth, facilities_implementation_type.kp '
+                       'FROM facilities_facility_info '
+                       'JOIN facilities_owner '
+                       'ON facilities_owner.id = facilities_facility_info.owner_id '                      
+                       'JOIN facilities_counties '
+                       'ON facilities_counties.id = facilities_facility_info.county_id '
+                       'JOIN facilities_sub_counties '
+                       'ON facilities_sub_counties.id = facilities_facility_info.sub_county_id '
+                       'JOIN facilities_implementation_type '
+                       'ON facilities_implementation_type.facility_info_id = facilities_facility_info.id '
+                       'where approved = True;')
+        default_all_facilities_data = cursor.fetchall()
 
     if data['OrganizationId'] != None:
         organization = Organizations.objects.select_related('org_access_right').get(
             organization_id=data['OrganizationId'])
 
         if organization.org_access_right:
-            facilities_info = Facility_Info.objects.select_related('partner') \
-                .select_related('county') \
-                .select_related('sub_county').filter(partner__id=organization.org_access_right.id, approved=True)
+            # if an organization id is sent back, filter according to that org id
+            with connection.cursor() as cursor:
+                cursor.execute('SELECT facilities_facility_info.id, facilities_facility_info.mfl_code, '
+                               'facilities_facility_info.name, facilities_counties.name, facilities_sub_counties.name,'
+                               'facilities_facility_info.partner_id, facilities_owner.name,  '
+                               'facilities_facility_info.lat, facilities_facility_info.lon, '
+                               'facilities_implementation_type.ct, facilities_implementation_type.hts, facilities_implementation_type.il, '
+                               'facilities_implementation_type.mHealth, facilities_implementation_type.kp '
+                               'FROM facilities_facility_info '
+                               'JOIN facilities_owner '
+                               'ON facilities_owner.id = facilities_facility_info.owner_id '                      
+                               'JOIN facilities_counties '
+                               'ON facilities_counties.id = facilities_facility_info.county_id '
+                               'JOIN facilities_sub_counties '
+                               'ON facilities_sub_counties.id = facilities_facility_info.sub_county_id '
+                               'JOIN facilities_implementation_type '
+                               'ON facilities_implementation_type.facility_info_id = facilities_facility_info.id '
+                               'where facilities_facility_info.partner_id = '+ str(organization.org_access_right.id) +' and facilities_facility_info.approved = True;')
+                facilities_info = cursor.fetchall()
         else:
-            facilities_info = Facility_Info.objects.prefetch_related('partner') \
-                .select_related('county') \
-                .select_related('sub_county').filter(approved=True)
+            facilities_info = default_all_facilities_data
     else:
-        facilities_info = Facility_Info.objects.prefetch_related('partner') \
-            .select_related('county') \
-            .select_related('sub_county').filter(approved=True)
+        facilities_info = default_all_facilities_data
 
     for row in facilities_info:
-        implementation_info = Implementation_type.objects.get(facility_info=row.id)
-        # emr_info = EMR_Info.objects.get(facility_info=row.id)
-        # hts_info = HTS_Info.objects.get(facility_info=row.id)
-        # il_info = IL_Info.objects.get(facility_info=row.id)
-        # mhealth_info = MHealth_Info.objects.get(facility_info=row.id)
-
-        ct = "CT" if implementation_info.ct else ""
-        hts = "HTS" if implementation_info.hts else ""
-        il = "IL" if implementation_info.il else ""
-
-        implementation = [ct, hts, il]
+        # check if partner id in Facility table has a value
+        if row[5] != None:
+            with connection.cursor() as cursor:
+                cursor.execute('SELECT facilities_partners.name, facilities_sdp_agencies.name '
+                               'FROM facilities_partners '
+                               'JOIN facilities_sdp_agencies '
+                               'ON facilities_sdp_agencies.id = facilities_partners.agency_id '
+                               'where facilities_partners.id = '+ str(row[5]) +';')
+                partner_data = cursor.fetchone()
+                sdp = partner_data[0]
+                agency = partner_data[1]
+        else:
+            sdp = ""
+            agency = ""
 
         dataObj = {}
-        dataObj["id"] = row.id
-        dataObj["mfl_code"] = row.mfl_code
-        dataObj["name"] = row.name
-        dataObj["county"] = row.county.name
-        dataObj["sub_county"] = row.sub_county.name
-        dataObj["owner"] = row.owner.name if row.owner else ""
-        dataObj["lat"] = row.lat if row.lat else ""
-        dataObj["lon"] = row.lon if row.lon else ""
-        dataObj["partner"] = row.partner.name if row.partner else ""
-        dataObj["agency"] = row.partner.agency.name if row.partner and row.partner.agency else ""
-        # dataObj["implementation"] = implementation
-        # dataObj["emr_type"] = emr_info.type.type if emr_info.type else ""
-        # dataObj["emr_status"] = emr_info.status if emr_info.status else ""
-        # dataObj["mode_of_use"] = emr_info.mode_of_use if emr_info.mode_of_use else ""
-        # dataObj["hts_use"] = hts_info.hts_use_name.hts_use_name if hts_info.hts_use_name else ""
-        # dataObj["hts_deployment"] = hts_info.deployment.deployment if hts_info.deployment else ""
-        # dataObj["hts_status"] = hts_info.status
-        # dataObj["il_status"] = il_info.status
-        # dataObj["il_registration_ie"] = il_info.webADT_registration
-        # dataObj["il_pharmacy_ie"] = il_info.webADT_pharmacy
-        # dataObj["mhealth_ovc"] = mhealth_info.Nishauri
+        dataObj["id"] = uuid.UUID(row[0])
+        dataObj["mfl_code"] = row[1]
+        dataObj["name"] = row[2]
+        dataObj["county"] = row[3]
+        dataObj["sub_county"] = row[4]
+        dataObj["owner"] = row[6] if row[6] else ""
+        dataObj["partner"] = sdp
+        dataObj["agency"] = agency
 
         facilitiesdata.append(dataObj)
 
     return JsonResponse(facilitiesdata,safe=False)
+
 
 def delete_facility(request, facility_id):
 
@@ -286,8 +308,20 @@ def delete_facility(request, facility_id):
 
     return HttpResponseRedirect('/home')
 
+
+@csrf_exempt
 def org_stewards_and_HISapprovers(request):
-    allowed_users = [i.email for i in Organization_stewards.objects.all()] + [i.email for i in Organization_HIS_approvers.objects.all()]
+    data = json.loads(request.body)
+
+    allowed_users = []
+
+    organization = Organizations.objects.get(organization_id=data["orgId"])
+    if organization.org_access_right != None:
+        steward_email = Organization_stewards.objects.get(organization=organization.org_access_right)
+        allowed_users.append(steward_email.email.lower() if steward_email else None)
+
+        approver_email = Organization_HIS_approvers.objects.get(organization=organization.org_access_right)
+        allowed_users.append(approver_email.email.lower() if approver_email else None)
     return JsonResponse(allowed_users, safe=False)
 
 
@@ -980,53 +1014,101 @@ def edit_partner(request, partner_id):
 def data_for_excel(request):
     data = json.loads(request.body)
 
+    with connection.cursor() as cursor:
+        cursor.execute('SELECT facilities_facility_info.id, facilities_facility_info.mfl_code, '
+                       'facilities_facility_info.name, facilities_counties.name, facilities_sub_counties.name,'
+                       'facilities_facility_info.partner_id, facilities_owner.name,  '
+                       'facilities_facility_info.lat, facilities_facility_info.lon, '
+                       'facilities_implementation_type.ct, facilities_implementation_type.hts, facilities_implementation_type.il, '
+                       'facilities_implementation_type.mHealth, facilities_implementation_type.kp '
+                       'FROM facilities_facility_info '
+                       'JOIN facilities_owner '
+                       'ON facilities_owner.id = facilities_facility_info.owner_id '                       
+                       'JOIN facilities_counties '
+                       'ON facilities_counties.id = facilities_facility_info.county_id '
+                       'JOIN facilities_sub_counties '
+                       'ON facilities_sub_counties.id = facilities_facility_info.sub_county_id '
+                       'JOIN facilities_implementation_type '
+                       'ON facilities_implementation_type.facility_info_id = facilities_facility_info.id '
+                       'where approved = True;')
+        default_all_facilities_data = cursor.fetchall()
+
     if data['OrganizationId'] != None:
         organization = Organizations.objects.select_related('org_access_right').get(
             organization_id=data['OrganizationId'])
 
         if organization.org_access_right:
-            facilities_info = Facility_Info.objects.select_related('partner') \
-                .select_related('county') \
-                .select_related('sub_county').filter(partner__id=organization.org_access_right.id)
+            # if an organization id is sent back, filter according to that org id
+            with connection.cursor() as cursor:
+                cursor.execute('SELECT facilities_facility_info.id, facilities_facility_info.mfl_code, '
+                               'facilities_facility_info.name, facilities_counties.name, facilities_sub_counties.name,'
+                               'facilities_facility_info.partner_id, facilities_owner.name,  '
+                               'facilities_facility_info.lat, facilities_facility_info.lon, '
+                               'facilities_implementation_type.ct, facilities_implementation_type.hts, facilities_implementation_type.il, '
+                               'facilities_implementation_type.mHealth, facilities_implementation_type.kp '
+                               'FROM facilities_facility_info '
+                               'JOIN facilities_owner '
+                               'ON facilities_owner.id = facilities_facility_info.owner_id '                       
+                               'JOIN facilities_counties '
+                               'ON facilities_counties.id = facilities_facility_info.county_id '
+                               'JOIN facilities_sub_counties '
+                               'ON facilities_sub_counties.id = facilities_facility_info.sub_county_id '
+                               'JOIN facilities_implementation_type '
+                               'ON facilities_implementation_type.facility_info_id = facilities_facility_info.id '
+                               'where facilities_facility_info.partner_id = ' + str(organization.org_access_right.id) +
+                               ' and facilities_facility_info.approved = True;')
+                facilities_info = cursor.fetchall()
         else:
-            facilities_info = Facility_Info.objects.prefetch_related('partner') \
-                .select_related('county') \
-                .select_related('sub_county').all()
+            facilities_info = default_all_facilities_data
     else:
-        facilities_info = Facility_Info.objects.prefetch_related('partner') \
-            .select_related('county') \
-            .select_related('sub_county').all()
+        facilities_info = default_all_facilities_data
 
     #append data to a list
     facilitiesdata = []
 
     for row in facilities_info:
-        implementation_info = Implementation_type.objects.get(facility_info=row.id)
-        emr_info = EMR_Info.objects.get(facility_info=row.id)
-        hts_info = HTS_Info.objects.get(facility_info=row.id)
-        il_info = IL_Info.objects.get(facility_info=row.id)
-        mhealth_info = MHealth_Info.objects.get(facility_info=row.id)
+        # check if partner id in Facility table has a value
+        if row[5] != None:
+            with connection.cursor() as cursor:
+                cursor.execute('SELECT facilities_partners.name, facilities_sdp_agencies.name '
+                               'FROM facilities_partners '
+                               'JOIN facilities_sdp_agencies '
+                               'ON facilities_sdp_agencies.id = facilities_partners.agency_id '
+                               'where facilities_partners.id = ' + str(row[5]) + ';')
+                partner_data = cursor.fetchone()
+                sdp = partner_data[0]
+                agency = partner_data[1]
+        else:
+            sdp = ""
+            agency = ""
 
-        ct = "CT " if implementation_info.ct else ""
-        hts = "HTS " if implementation_info.hts else ""
-        il = "IL " if implementation_info.il else ""
-        mhealth = "MHealth " if implementation_info.mhealth else ""
-        KP = "KP " if implementation_info.KP else ""
+        emr_info = EMR_Info.objects.get(facility_info=row[0])
+        hts_info = HTS_Info.objects.get(facility_info=row[0])
+        il_info = IL_Info.objects.get(facility_info=row[0])
+        mhealth_info = MHealth_Info.objects.get(facility_info=row[0])
+        # MHealth_Info.objects.raw('SELECT * FROM facilities_mhealth_info WHERE facility_info_id = %s', [row[0]])
+
+        ct = "CT " if row[9] else ""
+        hts = "HTS " if row[10] else ""
+        il = "IL " if row[11] else ""
+        mhealth = "MHealth " if row[12] else ""
+        KP = "KP " if row[13] else ""
 
         implementation = ct + hts + il + mhealth + KP
 
         try:
             dataObj = {}
-            dataObj["mfl_code"] = row.mfl_code
-            dataObj["name"] = row.name
-            dataObj["county"] = row.county.name
-            dataObj["sub_county"] = row.sub_county.name
-            dataObj["owner"] = row.owner.name if row.owner else ""
-            dataObj["lat"] = row.lat if row.lat else ""
-            dataObj["lon"] = row.lon if row.lon else ""
-            dataObj["partner"] = row.partner.name if row.partner else ""
-            dataObj["agency"] = row.partner.agency.name if row.partner and row.partner.agency else ""
+            dataObj["mfl_code"] = row[1]
+            dataObj["name"] = row[2]
+            dataObj["county"] = row[3]
+            dataObj["sub_county"] = row[4]
+            dataObj["owner"] = row[6] if row[6] else ""
+            dataObj["partner"] = sdp
+            dataObj["agency"] = agency
+            dataObj["lat"] = row[7] if row[7] else ""
+            dataObj["lon"] = row[8] if row[8] else ""
             dataObj["implementation"] = implementation
+
             dataObj["emr_type"] = emr_info.type.type if emr_info.type else ""
             dataObj["emr_status"] = emr_info.status if emr_info.status else ""
             dataObj["mode_of_use"] = emr_info.mode_of_use if emr_info.mode_of_use else ""
