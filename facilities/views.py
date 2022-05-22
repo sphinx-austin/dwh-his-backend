@@ -314,8 +314,10 @@ def org_stewards_and_HISapprovers(request):
     data = json.loads(request.body)
 
     allowed_users = []
+    print("Organization_HIS_approvers ---->",data["orgId"])
 
     organization = Organizations.objects.get(organization_id=data["orgId"])
+    print("organization ---->", organization.name)
     if organization.org_access_right != None:
         steward_email = Organization_stewards.objects.get(organization=organization.org_access_right)
         allowed_users.append(steward_email.email.lower() if steward_email else None)
@@ -483,6 +485,7 @@ def fetch_facility_data(request, facility_id):
     dataObj["emr_type"]= emr_info.type.id if emr_info.type else ""
     dataObj["emr_status"]= emr_info.status
     dataObj["mode_of_use"] = emr_info.mode_of_use
+    dataObj["date_of_emr_impl"] = emr_info.date_of_emr_impl
     dataObj["hts_use"]= hts_info.hts_use_name.id if hts_info.hts_use_name else ""
     dataObj["hts_deployment"]= hts_info.deployment.id if hts_info.deployment else ""
     dataObj["hts_status"]= hts_info.status
@@ -545,7 +548,7 @@ def add_facility_data(request):
         # save EMR info
         if data['CT'] == True:
             emr_info = EMR_Info(type=EMR_type.objects.get(pk=int(data['emr_type'])),
-                                status=data['emr_status'], mode_of_use=data['mode_of_use'],
+                                status=data['emr_status'], mode_of_use=data['mode_of_use'], date_of_emr_impl=data['date_of_emr_impl'],
                                 ovc=data['ovc_offered'], otz=data['otz_offered'],
                                 prep=data['prep_offered'], tb=data['tb_offered'],
                                 kp=data['kp_offered'], mnch=data['mnch_offered'],
@@ -555,7 +558,8 @@ def add_facility_data(request):
                                 for_version="original",
                                 facility_info=Facility_Info.objects.get(pk=unique_facility_id))
         else:
-            emr_info = EMR_Info(type=None, status=None, mode_of_use=None, ovc=None, otz=None, prep=None,
+            emr_info = EMR_Info(type=None, status=None, mode_of_use=None, date_of_emr_impl=None,
+                                ovc=None, otz=None, prep=None,
                                 tb=None, kp=None, mnch=None, lab_manifest=None,
                                 hiv=None, tpt=None,covid_19=None, evmmc=None,
                                 for_version="original",
@@ -661,7 +665,7 @@ def update_facility_data(request, facility_id):
     # save EMR info
     if data['CT'] == True:
         emr_info = EMR_Info(type=EMR_type.objects.get(pk=int(data['emr_type'])),
-                            status=data['emr_status'], mode_of_use=data['mode_of_use'],
+                            status=data['emr_status'], mode_of_use=data['mode_of_use'],date_of_emr_impl=data['date_of_emr_impl'],
                             ovc=data['ovc_offered'], otz=data['otz_offered'],
                             prep=data['prep_offered'], tb=data['tb_offered'],
                             # kp=data['kp_offered'],
@@ -672,7 +676,8 @@ def update_facility_data(request, facility_id):
                             for_version="edited",
                             facility_edits=Edited_Facility_Info.objects.get(pk=unique_id_for_edit))
     else:
-        emr_info = EMR_Info(type=None, status=None, mode_of_use=None, ovc=None, otz=None, prep=None,
+        emr_info = EMR_Info(type=None, status=None, mode_of_use=None, date_of_emr_impl=None,
+                            ovc=None, otz=None, prep=None,
                             tb=None, kp=None, mnch=None, lab_manifest=None,
                             hiv=None, tpt=None, covid_19=None, evmmc=None,
                             for_version="edited",
@@ -788,6 +793,7 @@ def fetch_edited_data(request, facility_id):
         dataObj["emr_type"]= emr_info.type.id if emr_info.type else ""
         dataObj["emr_status"]= emr_info.status
         dataObj["mode_of_use"] = emr_info.mode_of_use
+        dataObj["date_of_emr_impl"] = emr_info.date_of_emr_impl
         dataObj["hts_use"]= hts_info.hts_use_name.id if hts_info.hts_use_name else ""
         dataObj["hts_deployment"]= hts_info.deployment.id if hts_info.deployment else ""
         dataObj["hts_status"]= hts_info.status
@@ -842,7 +848,7 @@ def approve_facility_changes(request, facility_id):
         # save EMR info
         if data['CT'] == True:
            EMR_Info.objects.filter(facility_info=facility_id).update(type=EMR_type.objects.get(pk=int(data['emr_type'])),
-                                status=data['emr_status'], mode_of_use=data['mode_of_use'],
+                                status=data['emr_status'], mode_of_use=data['mode_of_use'], date_of_emr_impl=data['date_of_emr_impl'],
                                 ovc=data['ovc_offered'], otz=data['otz_offered'],
                                 prep=data['prep_offered'], tb=data['tb_offered'],
                                 # kp=data['kp_offered'],
@@ -852,7 +858,8 @@ def approve_facility_changes(request, facility_id):
                                  covid_19=data['covid_19_offered'], evmmc=data['evmmc_offered'],
                                 for_version="original")
         else:
-            EMR_Info.objects.filter(facility_info=facility_id).update(type=None, status=None, mode_of_use=None, ovc=None, otz=None, prep=None,
+            EMR_Info.objects.filter(facility_info=facility_id).update(type=None, status=None, mode_of_use=None,
+                                date_of_emr_impl=None, ovc=None, otz=None, prep=None,
                                 tb=None, kp=None, mnch=None, lab_manifest=None,
                                 hiv=None, tpt=None, covid_19=None, evmmc=None,
                                 for_version="original")
@@ -956,6 +963,7 @@ def view_facility_data(request, facility_id):
         'emr_type': emr_info.type.type if emr_info.type else "",
         'emr_status': emr_info.status,
         'mode_of_use': emr_info.mode_of_use,
+        "date_of_emr_impl":emr_info.date_of_emr_impl,
         'hts_use': hts_info.hts_use_name.hts_use_name if hts_info.hts_use_name else "",
         'hts_deployment': hts_info.deployment.deployment if hts_info.deployment else "",
         'hts_status': hts_info.status,
@@ -1126,6 +1134,7 @@ def data_for_excel(request):
             dataObj["EMR Type"] = emr_info.type.type if emr_info.type else ""
             dataObj["EMR Status"] = emr_info.status if emr_info.status else ""
             dataObj["Mode Of Use"] = emr_info.mode_of_use if emr_info.mode_of_use else ""
+            dataObj["Date of EMR Implementation"] = emr_info.date_of_emr_impl
             dataObj["HTS Use"] = hts_info.hts_use_name.hts_use_name if hts_info.hts_use_name else ""
             dataObj["HTS Deployment"] = hts_info.deployment.deployment if hts_info.deployment else ""
             dataObj["HTS Status"] = hts_info.status

@@ -120,6 +120,7 @@ class Edited_Facility_Info(models.Model):
 class EMR_Info(models.Model):
     type = models.ForeignKey(EMR_type, on_delete=models.CASCADE, blank=True, null=True)
     status = models.CharField(max_length=100, default=None, blank=True, null=True)
+    date_of_emr_impl = models.DateField(default=None, blank=True, null=True)
     mode_of_use = models.CharField(max_length=100, default=None, blank=True, null=True)
     ovc = models.BooleanField(default=False, blank=True, null=True)
     otz = models.BooleanField(default=False, blank=True, null=True)
