@@ -36,7 +36,7 @@ def test_email(request):
     }
     msg_html = render_to_string('facilities/email_template.html', context)
     msg = EmailMessage(subject="Facility test email", body=msg_html, from_email=settings.DEFAULT_FROM_EMAIL,
-                       bcc=['mary.kilewe@thepalladiumgroup.com', 'marykilewe@gmail.com'])
+                       bcc=['mary.kilewe@thepalladiumgroup.com'])
     msg.content_subtype = "html"  # Main content is now text/html
     msg.send()
     print('-----------> sending mail ...')
@@ -66,8 +66,7 @@ def send_email(request):
             'facility_id': facility_id,  # facilitydata.id
             'username': username
         }
-        # his_approver = Organization_HIS_approvers.objects.get(organization=partner)
-        his_approver = "mary.kilewe@thepalladiumgroup.com"
+        his_approver = Organization_HIS_approvers.objects.get(organization=partner)
         print('-----------> sending mail ...', his_approver.email)
         msg_html = render_to_string('facilities/email_template.html', context)
         msg = EmailMessage(subject="Facility Modified", body=msg_html, from_email=settings.DEFAULT_FROM_EMAIL,
@@ -76,6 +75,7 @@ def send_email(request):
         msg.send()
         print('-----------> sending mail ...', his_approver.email)
     return HttpResponse(0)
+
 
 @csrf_exempt
 def new_facility_send_email(request):
@@ -97,8 +97,7 @@ def new_facility_send_email(request):
             'facility_id': facility_id,  # facilitydata.id
             'username': username
         }
-        # his_approver = Organization_HIS_approvers.objects.get(organization=int(partner))
-        his_approver = "mary.kilewe@thepalladiumgroup.com"
+        his_approver = Organization_HIS_approvers.objects.get(organization=int(partner))
         print('-----------> sending mail ...', his_approver.email)
         msg_html = render_to_string('facilities/new_facility_email_template.html', context)
         msg = EmailMessage(subject="New Facility Added!", body=msg_html, from_email=settings.DEFAULT_FROM_EMAIL,
