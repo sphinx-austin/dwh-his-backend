@@ -100,7 +100,7 @@ def new_facility_send_email(request):
     print('-----------> sending mail ...', his_approver.email)
     msg_html = render_to_string('facilities/new_facility_email_template.html', context)
     msg = EmailMessage(subject="New Facility Added!", body=msg_html, from_email=settings.DEFAULT_FROM_EMAIL,
-                       bcc=['marykilewe@gmail.com', his_approver.email])  # , organization.email
+                       bcc=[his_approver.email])  # , organization.email
     msg.content_subtype = "html"  # Main content is now text/html
     msg.send()
     print('-----------> sending mail ...', his_approver.email)
@@ -314,16 +314,13 @@ def org_stewards_and_HISapprovers(request):
     data = json.loads(request.body)
 
     allowed_users = []
-    print("Organization_HIS_approvers ---->",data["orgId"])
+    print("Organization_HIS_approvers ---->",data["partner"])
 
-    organization = Organizations.objects.get(organization_id=data["orgId"])
-    print("organization ---->", organization.name)
-    if organization.org_access_right != None:
-        steward_email = Organization_stewards.objects.get(organization=organization.org_access_right)
-        allowed_users.append(steward_email.email.lower() if steward_email else None)
+    steward_email = Organization_stewards.objects.get(organization=data["partner"])
+    allowed_users.append(steward_email.email.lower() if steward_email else None)
 
-        approver_email = Organization_HIS_approvers.objects.get(organization=organization.org_access_right)
-        allowed_users.append(approver_email.email.lower() if approver_email else None)
+    approver_email = Organization_HIS_approvers.objects.get(organization=data["partner"])
+    allowed_users.append(approver_email.email.lower() if approver_email else None)
     return JsonResponse(allowed_users, safe=False)
 
 
