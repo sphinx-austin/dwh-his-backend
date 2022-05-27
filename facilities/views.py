@@ -36,7 +36,7 @@ def test_email(request):
     }
     msg_html = render_to_string('facilities/email_template.html', context)
     msg = EmailMessage(subject="Facility test email", body=msg_html, from_email=settings.DEFAULT_FROM_EMAIL,
-                       bcc=['mary.kilewe@thepalladiumgroup.com'])
+                       bcc=['mary.kilewe@thepalladiumgroup.com', 'marykilewe@gmail.com'])
     msg.content_subtype = "html"  # Main content is now text/html
     msg.send()
     print('-----------> sending mail ...')
