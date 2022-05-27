@@ -35,8 +35,8 @@ def test_email(request):
         'username': 123456
     }
     msg_html = render_to_string('facilities/email_template.html', context)
-    msg = EmailMessage(subject="Facility Modified", body=msg_html, from_email=settings.DEFAULT_FROM_EMAIL,
-                       bcc=['marykilewe@gmail.com'])
+    msg = EmailMessage(subject="Facility test email", body=msg_html, from_email=settings.DEFAULT_FROM_EMAIL,
+                       bcc=['mary.kilewe@thepalladiumgroup.com'])
     msg.content_subtype = "html"  # Main content is now text/html
     msg.send()
     print('-----------> sending mail ...')
@@ -1219,5 +1219,4 @@ def get_partners_list(request):
         partners_list.append(partnerObj)
 
     return JsonResponse(partners_list, safe=False)
-
 
