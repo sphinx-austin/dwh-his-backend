@@ -74,7 +74,7 @@ def send_email(request):
     msg.content_subtype = "html"  # Main content is now text/html
     msg.send()
     print('-----------> sending mail ...', his_approver.email)
-    return 0
+    return HttpResponse(0)
 
 @csrf_exempt
 def new_facility_send_email(request):
@@ -104,7 +104,7 @@ def new_facility_send_email(request):
     msg.content_subtype = "html"  # Main content is now text/html
     msg.send()
     print('-----------> sending mail ...', his_approver.email)
-    return 0
+    return HttpResponse(0)
 
 
 @csrf_exempt
