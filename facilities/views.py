@@ -54,7 +54,7 @@ def send_email(request):
     frontend_url = data['frontend_url']
     mfl_code = data['mfl_code']
     partner = data['partner']
-    print(data)
+    # print("data to be sent, ",data)
     # print("request.GET['facility_id']", request.GET['facility_id'], request.GET['username'], request.GET['frontend_url'])
 
     # facility = Facility_Info.objects.get(pk=facility_id)
@@ -80,7 +80,7 @@ def send_email(request):
 def new_facility_send_email(request):
     # print("see whats sent ---->", request.body)
     data = json.loads(request.body)
-
+    print("data to be sent, ", data)
     facility_id = data['facility_id']
     username = data['username']
     frontend_url = data['frontend_url']
@@ -96,7 +96,7 @@ def new_facility_send_email(request):
         'facility_id': facility_id,  # facilitydata.id
         'username': username
     }
-    his_approver = Organization_HIS_approvers.objects.get(organization=partner)
+    his_approver = Organization_HIS_approvers.objects.get(organization=int(partner))
     print('-----------> sending mail ...', his_approver.email)
     msg_html = render_to_string('facilities/new_facility_email_template.html', context)
     msg = EmailMessage(subject="New Facility Added!", body=msg_html, from_email=settings.DEFAULT_FROM_EMAIL,
