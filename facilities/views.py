@@ -61,12 +61,13 @@ def send_email(request):
 
         context = {
             'news': 'We have good news!',
-            'url': frontend_url + '/facilities/approve_changes/',
+            'url': env("APP_FRONTEND_URL") + '/facilities/approve_changes/',
             'mfl_code': mfl_code,  # facilitydata.mfl_code,
             'facility_id': facility_id,  # facilitydata.id
             'username': username
         }
-        his_approver = Organization_HIS_approvers.objects.get(organization=partner)
+        # his_approver = Organization_HIS_approvers.objects.get(organization=partner)
+        his_approver = "mary.kilewe@thepalladiumgroup.com"
         print('-----------> sending mail ...', his_approver.email)
         msg_html = render_to_string('facilities/email_template.html', context)
         msg = EmailMessage(subject="Facility Modified", body=msg_html, from_email=settings.DEFAULT_FROM_EMAIL,
@@ -91,12 +92,13 @@ def new_facility_send_email(request):
 
         context = {
             'news': 'We have good news!',
-            'url': frontend_url + '/facilities/approve_changes/',
+            'url': env("APP_FRONTEND_URL") + '/facilities/approve_changes/',
             'mfl_code': mfl_code,  # facilitydata.mfl_code,
             'facility_id': facility_id,  # facilitydata.id
             'username': username
         }
-        his_approver = Organization_HIS_approvers.objects.get(organization=int(partner))
+        # his_approver = Organization_HIS_approvers.objects.get(organization=int(partner))
+        his_approver = "mary.kilewe@thepalladiumgroup.com"
         print('-----------> sending mail ...', his_approver.email)
         msg_html = render_to_string('facilities/new_facility_email_template.html', context)
         msg = EmailMessage(subject="New Facility Added!", body=msg_html, from_email=settings.DEFAULT_FROM_EMAIL,
