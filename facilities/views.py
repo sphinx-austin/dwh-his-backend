@@ -35,8 +35,8 @@ def test_email(request):
         'username': 123456
     }
     msg_html = render_to_string('facilities/email_template.html', context)
-    msg = EmailMessage(subject="Facility Modified", body=msg_html, from_email=settings.DEFAULT_FROM_EMAIL,
-                       bcc=['marykilewe@gmail.com'])
+    msg = EmailMessage(subject="Facility test email", body=msg_html, from_email=settings.DEFAULT_FROM_EMAIL,
+                       bcc=['mary.kilewe@thepalladiumgroup.com'])
     msg.content_subtype = "html"  # Main content is now text/html
     msg.send()
     print('-----------> sending mail ...')
@@ -46,65 +46,66 @@ def test_email(request):
 
 @csrf_exempt
 def send_email(request):
-    # print("see whats sent ---->", request.body)
-    data = json.loads(request.body)
+    if request.method == 'POST':
+        data = json.loads(request.body)
 
-    facility_id = data['facility_id']
-    username = data['username']
-    frontend_url = data['frontend_url']
-    mfl_code = data['mfl_code']
-    partner = data['partner']
-    print(data)
-    # print("request.GET['facility_id']", request.GET['facility_id'], request.GET['username'], request.GET['frontend_url'])
+        facility_id = data['facility_id']
+        username = data['username']
+        frontend_url = data['frontend_url']
+        mfl_code = data['mfl_code']
+        partner = data['partner']
+        # print("data to be sent, ",data)
+        # print("request.GET['facility_id']", request.GET['facility_id'], request.GET['username'], request.GET['frontend_url'])
 
-    # facility = Facility_Info.objects.get(pk=facility_id)
+        # facility = Facility_Info.objects.get(pk=facility_id)
 
-    context = {
-        'news': 'We have good news!',
-        'url': frontend_url + '/facilities/approve_changes/',
-        'mfl_code': mfl_code,  # facilitydata.mfl_code,
-        'facility_id': facility_id,  # facilitydata.id
-        'username': username
-    }
-    his_approver = Organization_HIS_approvers.objects.get(organization=partner)
-    print('-----------> sending mail ...', his_approver.email)
-    msg_html = render_to_string('facilities/email_template.html', context)
-    msg = EmailMessage(subject="Facility Modified", body=msg_html, from_email=settings.DEFAULT_FROM_EMAIL,
-                       bcc=['marykilewe@gmail.com', his_approver.email])  # , organization.email
-    msg.content_subtype = "html"  # Main content is now text/html
-    msg.send()
-    print('-----------> sending mail ...', his_approver.email)
-    return 0
+        context = {
+            'news': 'We have good news!',
+            'url': env("APP_FRONTEND_URL") + '/facilities/approve_changes/',
+            'mfl_code': mfl_code,  # facilitydata.mfl_code,
+            'facility_id': facility_id,  # facilitydata.id
+            'username': username
+        }
+        his_approver = Organization_HIS_approvers.objects.get(organization=partner)
+        print('-----------> sending mail ...', his_approver.email)
+        msg_html = render_to_string('facilities/email_template.html', context)
+        msg = EmailMessage(subject="Facility Modified", body=msg_html, from_email=settings.DEFAULT_FROM_EMAIL,
+                           bcc=['marykilewe@gmail.com', his_approver.email])  # , organization.email
+        msg.content_subtype = "html"  # Main content is now text/html
+        msg.send()
+        print('-----------> sending mail ...', his_approver.email)
+    return HttpResponse(0)
+
 
 @csrf_exempt
 def new_facility_send_email(request):
-    # print("see whats sent ---->", request.body)
-    data = json.loads(request.body)
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        print("data to be sent, ", data)
+        facility_id = data['facility_id']
+        username = data['username']
+        frontend_url = data['frontend_url']
+        mfl_code = data['mfl_code']
+        partner = data['partner']
 
-    facility_id = data['facility_id']
-    username = data['username']
-    frontend_url = data['frontend_url']
-    mfl_code = data['mfl_code']
-    partner = data['partner']
+        # facility = Facility_Info.objects.get(pk=facility_id)
 
-    # facility = Facility_Info.objects.get(pk=facility_id)
-
-    context = {
-        'news': 'We have good news!',
-        'url': frontend_url + '/facilities/approve_changes/',
-        'mfl_code': mfl_code,  # facilitydata.mfl_code,
-        'facility_id': facility_id,  # facilitydata.id
-        'username': username
-    }
-    his_approver = Organization_HIS_approvers.objects.get(organization=partner)
-    print('-----------> sending mail ...', his_approver.email)
-    msg_html = render_to_string('facilities/new_facility_email_template.html', context)
-    msg = EmailMessage(subject="New Facility Added!", body=msg_html, from_email=settings.DEFAULT_FROM_EMAIL,
-                       bcc=['marykilewe@gmail.com', his_approver.email])  # , organization.email
-    msg.content_subtype = "html"  # Main content is now text/html
-    msg.send()
-    print('-----------> sending mail ...', his_approver.email)
-    return 0
+        context = {
+            'news': 'We have good news!',
+            'url': env("APP_FRONTEND_URL") + '/facilities/approve_changes/',
+            'mfl_code': mfl_code,  # facilitydata.mfl_code,
+            'facility_id': facility_id,  # facilitydata.id
+            'username': username
+        }
+        his_approver = Organization_HIS_approvers.objects.get(organization=int(partner))
+        print('-----------> sending mail ...', his_approver.email)
+        msg_html = render_to_string('facilities/new_facility_email_template.html', context)
+        msg = EmailMessage(subject="New Facility Added!", body=msg_html, from_email=settings.DEFAULT_FROM_EMAIL,
+                           bcc=[his_approver.email])  # , organization.email
+        msg.content_subtype = "html"  # Main content is now text/html
+        msg.send()
+        print('-----------> sending mail ...', his_approver.email)
+    return HttpResponse(0)
 
 
 @csrf_exempt
@@ -314,16 +315,13 @@ def org_stewards_and_HISapprovers(request):
     data = json.loads(request.body)
 
     allowed_users = []
-    print("Organization_HIS_approvers ---->",data["orgId"])
+    print("Organization_HIS_approvers ---->",data["partner"])
 
-    organization = Organizations.objects.get(organization_id=data["orgId"])
-    print("organization ---->", organization.name)
-    if organization.org_access_right != None:
-        steward_email = Organization_stewards.objects.get(organization=organization.org_access_right)
-        allowed_users.append(steward_email.email.lower() if steward_email else None)
+    steward_email = Organization_stewards.objects.get(organization=data["partner"])
+    allowed_users.append(steward_email.email.lower() if steward_email else None)
 
-        approver_email = Organization_HIS_approvers.objects.get(organization=organization.org_access_right)
-        allowed_users.append(approver_email.email.lower() if approver_email else None)
+    approver_email = Organization_HIS_approvers.objects.get(organization=data["partner"])
+    allowed_users.append(approver_email.email.lower() if approver_email else None)
     return JsonResponse(allowed_users, safe=False)
 
 
@@ -1219,5 +1217,4 @@ def get_partners_list(request):
         partners_list.append(partnerObj)
 
     return JsonResponse(partners_list, safe=False)
-
 
