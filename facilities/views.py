@@ -40,7 +40,7 @@ def test_email(request):
     msg.content_subtype = "html"  # Main content is now text/html
     msg.send()
     print('-----------> sending mail ...')
-    return 0
+    return HttpResponse('send test email...')
 
 
 
