@@ -33,7 +33,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'crispy_forms',
-    'users.apps.UsersConfig',
+    'admin_manager.apps.UsersConfig',
     'facilities.apps.FacilitiesConfig',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -142,14 +142,14 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
-LOGIN_URL = '/user/login/'
-LOGIN_REDIRECT_URL = 'index'
-LOGOUT_REDIRECT_URL = 'index'
+LOGIN_URL = '/admin/manager/user/login/'
+LOGIN_REDIRECT_URL = 'view_unapproved'
+LOGOUT_REDIRECT_URL = 'view_unapproved'
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-DEFAULT_FROM_EMAIL = "DWH-HIS Management Portal" #+ env("EMAIL_HOST_USER")
-EMAIL_HOST = 'smtp.gmail.com'   #'smtp.mailgun.org'
-EMAIL_HOST_USER = 'info.dwhhisplatform@gmail.com'#env("EMAIL_HOST_USER")
+DEFAULT_FROM_EMAIL = "DWH-HIS Management Portal" + env("EMAIL_HOST_USER")
+EMAIL_HOST = 'smtp.mailgun.org'
+EMAIL_HOST_USER = env("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD")
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
