@@ -19,8 +19,8 @@ from django.urls import include, path
 
 urlpatterns = [
     path('', include('facilities.urls')),
-    path('', include('users.urls')),
-    path('admin/', admin.site.urls),
+    path('', include('admin_manager.urls')),
+    # path('admin/', admin.site.urls),
 ]
 
 # create_db()
