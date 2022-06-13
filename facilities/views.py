@@ -244,8 +244,16 @@ def facilities(request):
         default_all_facilities_data = cursor.fetchall()
 
     if data['OrganizationId'] != None:
-        organization = Organizations.objects.select_related('org_access_right').get(
-            organization_id=data['OrganizationId'])
+        if type(data['OrganizationId']) is list:
+            for id in data['OrganizationId']:
+                try:
+                    organization = Organizations.objects.select_related('org_access_right').get(
+                        organization_id=id)
+                except Organizations.DoesNotExist:
+                    pass
+        else:
+            organization = Organizations.objects.select_related('org_access_right').get(
+                organization_id=data['OrganizationId'])
 
         if organization.org_access_right:
             # if an organization id is sent back, filter according to that org id
@@ -1040,7 +1048,15 @@ def data_for_excel(request):
         default_all_facilities_data = cursor.fetchall()
 
     if data['OrganizationId'] != None:
-        organization = Organizations.objects.select_related('org_access_right').get(
+        if type(data['OrganizationId']) is list:
+            for id in data['OrganizationId']:
+                try:
+                    organization = Organizations.objects.select_related('org_access_right').get(
+                        organization_id=id)
+                except Organizations.DoesNotExist:
+                    pass
+        else:
+            organization = Organizations.objects.select_related('org_access_right').get(
             organization_id=data['OrganizationId'])
 
         if organization.org_access_right:
