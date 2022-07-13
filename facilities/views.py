@@ -595,18 +595,18 @@ def add_facility_data(request):
                                     for_version="original",
                                     facility_info=Facility_Info.objects.get(pk=unique_facility_id))
 
-        try:
-            # save to the DB
-            facility.save()
-            implementation_info.save()
-            hts_info.save()
-            emr_info.save()
-            il_info.save()
-            mhealth_info.save()
-            return JsonResponse({'status_code': 200, 'redirect_url': 'home/'})
-        except Exception as e:
-            print(e)
-            return JsonResponse({'status_code': 500, 'error':"Something went wrong. Please refresh and try again"})
+        # save to the DB
+        facility.save()
+        implementation_info.save()
+        hts_info.save()
+        emr_info.save()
+        il_info.save()
+        mhealth_info.save()
+        return JsonResponse({'status_code': 200, 'redirect_url': 'home/'})
+
+    except Exception as e:
+        print(e)
+        return JsonResponse({'status_code': 500, 'error':e})
 
 
 def check_for_facility_edits(request, facility_id):
@@ -628,93 +628,93 @@ def update_facility_data(request, facility_id):
     # try:
     unique_id_for_edit = uuid.uuid4()
     # Save the new category to the database.
-    facility = Edited_Facility_Info.objects.create(id=unique_id_for_edit, mfl_code=int(data['mfl_code']),
-                                            name=data['name'],
-                                            county=Counties.objects.get(
-                                                pk=int(data['county'])),
-                                            sub_county=Sub_counties.objects.get(
-                                                pk=int(data['sub_county'])),
-                                            owner=Owner.objects.get(pk=int(data['owner'])),
-                                            partner=Partners.objects.get(
-                                                pk=int(data['partner'])) if data['partner'] != "" else None,
-                                            # facilitydata.agency = facilitydata.partner.agency.name
-                                            lat=data['lat'] if data['lat'] else None,
-                                            lon=data['lon'] if data['lon'] else None,
-                                            facility_info=Facility_Info.objects.get(pk=facility_id),
-                                            date_edited=datetime.datetime.today(),
-                                            user_edited_name=data['username'],
-                                            user_edited_email=data['email']
-                                            )
+    try:
+        facility = Edited_Facility_Info.objects.create(id=unique_id_for_edit, mfl_code=int(data['mfl_code']),
+                                                name=data['name'],
+                                                county=Counties.objects.get(
+                                                    pk=int(data['county'])),
+                                                sub_county=Sub_counties.objects.get(
+                                                    pk=int(data['sub_county'])),
+                                                owner=Owner.objects.get(pk=int(data['owner'])),
+                                                partner=Partners.objects.get(
+                                                    pk=int(data['partner'])) if data['partner'] != "" else None,
+                                                # facilitydata.agency = facilitydata.partner.agency.name
+                                                lat=data['lat'] if data['lat'] else None,
+                                                lon=data['lon'] if data['lon'] else None,
+                                                facility_info=Facility_Info.objects.get(pk=facility_id),
+                                                date_edited=datetime.datetime.today(),
+                                                user_edited_name=data['username'],
+                                                user_edited_email=data['email']
+                                                )
 
-    # save Implementation info
-    implementation_info = Implementation_type(ct=data['CT'], KP=data["KP"],
-                                              hts=data['HTS'], il=data['IL'],
-                                              mhealth=data['mHealth'],
-                                              for_version="edited",
-                                              facility_edits=Edited_Facility_Info.objects.get(
-                                                  pk=unique_id_for_edit))
+        # save Implementation info
+        implementation_info = Implementation_type(ct=data['CT'], KP=data["KP"],
+                                                  hts=data['HTS'], il=data['IL'],
+                                                  mhealth=data['mHealth'],
+                                                  for_version="edited",
+                                                  facility_edits=Edited_Facility_Info.objects.get(
+                                                      pk=unique_id_for_edit))
 
-    if data['HTS'] == True:
-        # save HTS info
-        hts_info = HTS_Info(hts_use_name=HTS_use_type.objects.get(pk=int(data['hts_use'])),
-                            status=data['hts_status'],
-                            deployment=HTS_deployment_type.objects.get(
-                                pk=int(data['hts_deployment'])),
-                            for_version="edited",
-                            facility_edits=Edited_Facility_Info.objects.get(pk=unique_id_for_edit))
-    else:
-        # save HTS info
-        hts_info = HTS_Info(hts_use_name=None, status=None, deployment=None,
-                            for_version="edited",
-                            facility_edits=Edited_Facility_Info.objects.get(pk=unique_id_for_edit))
-
-    # save EMR info
-    if data['CT'] == True:
-        emr_info = EMR_Info(type=EMR_type.objects.get(pk=int(data['emr_type'])),
-                            status=data['emr_status'], mode_of_use=data['mode_of_use'],date_of_emr_impl=data['date_of_emr_impl'],
-                            ovc=data['ovc_offered'], otz=data['otz_offered'],
-                            prep=data['prep_offered'], tb=data['tb_offered'],
-                            # kp=data['kp_offered'],
-                            mnch=data['mnch_offered'],
-                            lab_manifest=None,
-                            hiv=data['hiv_offered'], tpt=data['tpt_offered'],
-                            covid_19=data['covid_19_offered'], evmmc=data['evmmc_offered'],
-                            for_version="edited",
-                            facility_edits=Edited_Facility_Info.objects.get(pk=unique_id_for_edit))
-    else:
-        emr_info = EMR_Info(type=None, status=None, mode_of_use=None, date_of_emr_impl=None,
-                            ovc=None, otz=None, prep=None,
-                            tb=None, kp=None, mnch=None, lab_manifest=None,
-                            hiv=None, tpt=None, covid_19=None, evmmc=None,
-                            for_version="edited",
-                            facility_edits=Edited_Facility_Info.objects.get(pk=unique_id_for_edit))
-
-    # save IL info
-    if data['IL'] == True:
-        il_info = IL_Info(webADT_registration=data['webADT_registration'],
-                          webADT_pharmacy=data['webADT_pharmacy'],
-                          status=None, three_PM=data['il_three_PM'],
-                          air=data['il_air'], Ushauri=data['il_ushauri'],
-                          Mlab=data['il_mlab'],
-                          lab_manifest=data['il_lab_manifest'], nimeconfirm=data['il_nimeconfirm'],
-                          for_version="edited",
-                          facility_edits=Edited_Facility_Info.objects.get(pk=unique_id_for_edit))
-    else:
-        il_info = IL_Info(webADT_registration=None, webADT_pharmacy=None, status=None, three_PM=None,
-                          air=None, Ushauri=None, Mlab=None,
-                          lab_manifest=None, nimeconfirm=None,
-                          for_version="edited",
-                          facility_edits=Edited_Facility_Info.objects.get(pk=unique_id_for_edit))
-
-    # save MHealth info
-    mhealth_info = MHealth_Info(Ushauri=data['mhealth_ushauri'], C4C=data['mhealth_c4c'],
-                                Nishauri=data['mhealth_nishauri'],
-                                ART_Directory=data['mhealth_art'],
-                                Psurvey=data['mhealth_psurvey'], Mlab=data['mhealth_mlab'],
+        if data['HTS'] == True:
+            # save HTS info
+            hts_info = HTS_Info(hts_use_name=HTS_use_type.objects.get(pk=int(data['hts_use'])),
+                                status=data['hts_status'],
+                                deployment=HTS_deployment_type.objects.get(
+                                    pk=int(data['hts_deployment'])),
+                                for_version="edited",
+                                facility_edits=Edited_Facility_Info.objects.get(pk=unique_id_for_edit))
+        else:
+            # save HTS info
+            hts_info = HTS_Info(hts_use_name=None, status=None, deployment=None,
                                 for_version="edited",
                                 facility_edits=Edited_Facility_Info.objects.get(pk=unique_id_for_edit))
 
-    try:
+        # save EMR info
+        if data['CT'] == True:
+            emr_info = EMR_Info(type=EMR_type.objects.get(pk=int(data['emr_type'])),
+                                status=data['emr_status'], mode_of_use=data['mode_of_use'],date_of_emr_impl=data['date_of_emr_impl'],
+                                ovc=data['ovc_offered'], otz=data['otz_offered'],
+                                prep=data['prep_offered'], tb=data['tb_offered'],
+                                # kp=data['kp_offered'],
+                                mnch=data['mnch_offered'],
+                                lab_manifest=None,
+                                hiv=data['hiv_offered'], tpt=data['tpt_offered'],
+                                covid_19=data['covid_19_offered'], evmmc=data['evmmc_offered'],
+                                for_version="edited",
+                                facility_edits=Edited_Facility_Info.objects.get(pk=unique_id_for_edit))
+        else:
+            emr_info = EMR_Info(type=None, status=None, mode_of_use=None, date_of_emr_impl=None,
+                                ovc=None, otz=None, prep=None,
+                                tb=None, kp=None, mnch=None, lab_manifest=None,
+                                hiv=None, tpt=None, covid_19=None, evmmc=None,
+                                for_version="edited",
+                                facility_edits=Edited_Facility_Info.objects.get(pk=unique_id_for_edit))
+
+        # save IL info
+        if data['IL'] == True:
+            il_info = IL_Info(webADT_registration=data['webADT_registration'],
+                              webADT_pharmacy=data['webADT_pharmacy'],
+                              status=None, three_PM=data['il_three_PM'],
+                              air=data['il_air'], Ushauri=data['il_ushauri'],
+                              Mlab=data['il_mlab'],
+                              lab_manifest=data['il_lab_manifest'], nimeconfirm=data['il_nimeconfirm'],
+                              for_version="edited",
+                              facility_edits=Edited_Facility_Info.objects.get(pk=unique_id_for_edit))
+        else:
+            il_info = IL_Info(webADT_registration=None, webADT_pharmacy=None, status=None, three_PM=None,
+                              air=None, Ushauri=None, Mlab=None,
+                              lab_manifest=None, nimeconfirm=None,
+                              for_version="edited",
+                              facility_edits=Edited_Facility_Info.objects.get(pk=unique_id_for_edit))
+
+        # save MHealth info
+        mhealth_info = MHealth_Info(Ushauri=data['mhealth_ushauri'], C4C=data['mhealth_c4c'],
+                                    Nishauri=data['mhealth_nishauri'],
+                                    ART_Directory=data['mhealth_art'],
+                                    Psurvey=data['mhealth_psurvey'], Mlab=data['mhealth_mlab'],
+                                    for_version="edited",
+                                    facility_edits=Edited_Facility_Info.objects.get(pk=unique_id_for_edit))
+
         # save to the DB
         facility.save()
         implementation_info.save()
