@@ -16,15 +16,19 @@ jobs:
         key: ${{ secrets.CICD_SECRET }}
         port: ${{ secrets.PORT }}
         script: |
-          git config --global --add safe.directory /apps/github-workflows/dwh-his-backend      
+          cd /apps/github-workflows/
+          sudo rm -rf dwh-his-backend
+          sudo mkdir dwh-his-backend
+          sudo chown -R cicd2:cicd2 dwh-his-backend
+          git config --global --add safe.directory /apps/github-workflows/ddwh-his-backend 
+          git clone https://github.com/palladiumkenya/dwh-his-backend.git
           cd /apps/github-workflows/dwh-his-backend
-          git pull origin master
           git status
-          cp /apps/dockerApps/dwh-his-backend/his.dockerfile /apps/github-workflows/dwh-his-backend
-          cp /apps/dockerApps/dwh-his-backend/nginx.dockerfile /apps/github-workflows/dwh-his-backend
-          cp /apps/dockerApps/dwh-his-backend/docker-compose.yml /apps/github-workflows/dwh-his-backend
-          cp /apps/dockerApps/dwh-his-backend/.env /apps/github-workflows/dwh-his-backend/mfl_interface/
-          cp -r /apps/dockerApps/dwh-his-backend/docker/ /apps/github-workflows/dwh-his-backend
-          docker-compose down
-          docker-compose rm -f
-          docker-compose up --build -d 
+          sudo cp /apps/dockerApps/dwh-his-backend/his.dockerfile /apps/github-workflows/dwh-his-backend
+          sudo cp /apps/dockerApps/dwh-his-backend/nginx.dockerfile /apps/github-workflows/dwh-his-backend
+          sudo cp /apps/dockerApps/dwh-his-backend/docker-compose.yml /apps/github-workflows/dwh-his-backend
+          sudo cp /apps/dockerApps/dwh-his-backend/.env /apps/github-workflows/dwh-his-backend/mfl_interface/
+          sudo cp -r /apps/dockerApps/dwh-his-backend/docker/ /apps/github-workflows/dwh-his-backend
+          sudo docker-compose down
+          sudo docker-compose rm -f
+          sudo docker-compose up --build -d 
