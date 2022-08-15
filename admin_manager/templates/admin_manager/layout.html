@@ -48,7 +48,10 @@
       <div class="collapse navbar-collapse" id="navbarExample01">
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
           <li class="nav-item active" style="background-color:#0e2031">
-            <a class="nav-link text-white" style="" aria-current="page" href="/facilities">MFL INTERFACE</a>
+            <a class="nav-link text-white" style="" aria-current="page" href="view unapproved">MFL INTERFACE</a>
+          </li>
+            <li class="nav-item">
+            <a class="nav-link text-white" href="view edits">Edits</a>
           </li>
           <li class="nav-item">
             <a class="nav-link text-white" href="/facilities/partners">Partners</a>
@@ -61,7 +64,7 @@
           </li>
         </ul>
           {% if user.is_authenticated %}
-            <p class="text-white">Welcome, {{user.username}}</p>
+          <p class="text-white fs-l">Welcome, {{user.username}} <a href="logout_user" class="ml-5" style="font-size:30px">Logout </a></p>
           {% else %}
                 <a href="user/login" class="btn green_bg_color text-white">Login</a>
           {% endif %}
