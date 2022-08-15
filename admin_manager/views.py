@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-
+from django.contrib.auth import logout
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from .forms.users.forms import *
 from django.contrib import messages
@@ -40,19 +40,52 @@ def view_unapproved(request):
         facilitiesdata.append(dataObj)
     return render(request, 'admin_manager/view_unapproved.html', {'facilitiesdata': facilitiesdata})
 
+def view_edits(request):
+    facilities_info = Edited_Facility_Info.objects.prefetch_related('partner') \
+        .select_related('county').select_related('partner').select_related('owner') \
+        .select_related('sub_county')
+
+    editsdata = []
+    for row in facilities_info:
+
+        dataObj = {}
+        dataObj["id"] = row.id
+        dataObj["mfl_code"] = row.mfl_code
+        dataObj["name"] = row.name
+        dataObj["county"] = row.county
+        dataObj["sub_county"] = row.sub_county
+        dataObj["owner"] = row.owner.name
+        dataObj["lat"] = row.lat
+        dataObj["lon"] = row.lon
+        dataObj["partner"] = row.partner.name if row.partner else ""
+        dataObj["agency"] = row.partner.agency.name if row.partner and row.partner.agency else ""
+
+        editsdata.append(dataObj)
+    return render(request, 'admin_manager/view_edits.html', {'editsdata': editsdata})
+
 
 def delete_facility(request, facility_id):
 
     # get rid of the edits
     try:
         Facility_Info.objects.get(pk=facility_id, approved=False).delete()
-    except Edited_Facility_Info.DoesNotExist:
+    except Facility_Info.DoesNotExist:
         print('Facility doesnt exist')
 
     # messages.add_message(request, messages.SUCCESS, "Facility successfully deleted!")
     return HttpResponse('success')
 
 
+def delete_edit(request, facility_id):
+
+    # get rid of the edits
+    try:
+        Edited_Facility_Info.objects.get(pk=facility_id).delete()
+    except Edited_Facility_Info.DoesNotExist:
+        print('Facility Edits doesnt exist')
+
+    # messages.add_message(request, messages.SUCCESS, "Facility successfully deleted!")
+    return HttpResponse('success')
 
 
 def signin(request):
@@ -85,5 +118,5 @@ def generate_nonce(length=32):
 
 
 def logout_user(request):
-
+    logout(request)
     return HttpResponseRedirect('/')
