@@ -27,11 +27,14 @@
                         <td>{{data.owner}}</td>
                         <td>{{data.partner}}</td>
                         <td>{{data.agency}}</td>
-                        <td> {% if user.is_authenticated %}
-                              <i class="fa-solid fa-trash-can fa-lg text-danger" onclick='confirm_delete("{{data.id}}")'></i>
-                           {% else %}
-                              <a href="/signup"><i class="fa-solid fa-trash-can fa-2x text-danger"></i></a>
-                           {% endif %}
+                        <td>
+<!--                            {% if user.is_authenticated %}-->
+<!--                              <i class="fa-solid fa-trash-can fa-lg text-danger" onclick='confirm_delete("{{data.id}}")'></i>-->
+<!--                           {% else %}-->
+<!--                              <a href="/signup"><i class="fa-solid fa-trash-can fa-2x text-danger"></i></a>-->
+<!--                           {% endif %}-->
+                               <i class="fa-solid fa-trash-can fa-lg text-danger" onclick='confirm_delete("{{data.id}}")'></i>
+
                         </td>
                     </tr>
                     {% endfor %}
