@@ -220,8 +220,11 @@ def fill_database(request):
 @csrf_exempt
 def facilities(request):
     facilitiesdata = []
+    data={'OrganizationId':None}
 
-    data = json.loads(request.body)
+    if (request.body):
+        data = json.loads(request.body)
+
     # print("what was sent back ----------->", data, data['OrganizationId'])
 
     with connection.cursor() as cursor:
@@ -325,8 +328,13 @@ def org_stewards_and_HISapprovers(request):
     allowed_users = []
     print("Organization_HIS_approvers ---->",data["partner"])
 
-    steward_email = Organization_stewards.objects.get(organization=data["partner"])
-    allowed_users.append(steward_email.email.lower() if steward_email else None)
+    steward_emails = Organization_stewards.objects.filter(organization=data["partner"])
+    print('steward_emails -->', steward_emails)
+    if steward_emails:
+        for i in steward_emails:
+            allowed_users.append(i.email.lower())
+
+    # allowed_users.append(steward_email.email.lower() if steward_email else None)
 
     approver_email = Organization_HIS_approvers.objects.get(organization=data["partner"])
     allowed_users.append(approver_email.email.lower() if approver_email else None)
@@ -998,14 +1006,24 @@ def partners(request):
 
 @csrf_exempt
 def edit_partner(request, partner_id):
+    allowed_users = []
+
+    steward_emails = Organization_stewards.objects.filter(organization=partner_id)
+
+    if steward_emails:
+        for i in steward_emails:
+            allowed_users.append(i.email.lower())
+
+    approver_email = Organization_HIS_approvers.objects.get(organization=partner_id)
+    allowed_users.append(approver_email.email.lower() if approver_email else None)
 
     partner_query = Partners.objects.prefetch_related('agency').get(pk=partner_id)
-    org_steward = Organization_stewards.objects.select_related('organization').get(organization__id=partner_id)
+    # org_steward = Organization_stewards.objects.select_related('organization').get(organization__id=partner_id)
     partObj = {}
 
     partObj['id'] = partner_query.id
     partObj['partner'] = partner_query.name
-    partObj['org_steward_email'] = (org_steward.email).strip()
+    partObj['org_steward_emails'] = allowed_users
     partObj['agency'] = partner_query.agency.name if partner_query.agency else ""
     partObj['agency_id'] = partner_query.agency.id if partner_query.agency else ""
 
