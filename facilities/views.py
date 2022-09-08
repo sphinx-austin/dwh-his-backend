@@ -235,7 +235,7 @@ def facilities(request):
                        'facilities_implementation_type.ct, facilities_implementation_type.hts, facilities_implementation_type.il, '
                        'facilities_implementation_type.mHealth, facilities_implementation_type.kp '
                        'FROM facilities_facility_info '
-                       'JOIN facilities_owner '
+                       ' LEFT OUTER JOIN facilities_owner '
                        'ON facilities_owner.id = facilities_facility_info.owner_id '                      
                        'JOIN facilities_counties '
                        'ON facilities_counties.id = facilities_facility_info.county_id '
