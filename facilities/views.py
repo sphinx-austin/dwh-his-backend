@@ -1046,23 +1046,74 @@ def edit_partner(request, partner_id):
 def data_for_excel(request):
     data = json.loads(request.body)
 
+    query = " SELECT facilities_facility_info.mfl_code, facilities_facility_info.name As FacilityName, " \
+                        " facilities_counties.name As County, facilities_sub_counties.name As SubCounty, " \
+                        " facilities_owner.name As Owner,facilities_facility_info.lat,facilities_facility_info.lon , " \
+                        " facilities_partners.name As SDP, " \
+                        " (case when facilities_implementation_type.CT = 1 then 'YES' when facilities_implementation_type.CT = 0 then 'NO' else 'N/A' end) AS CT, " \
+                        " (case when facilities_implementation_type.HTS = 1 then 'YES' when facilities_implementation_type.HTS = 0 then 'NO' else 'N/A' end) AS HTS, " \
+                        " (case when facilities_implementation_type.IL = 1 then 'YES' when facilities_implementation_type.IL = 0 then 'NO' else 'N/A' end) AS IL, " \
+                        " (case when facilities_implementation_type.MHealth = 1 then 'YES' when facilities_implementation_type.MHealth = 0 then 'NO' else 'N/A' end)AS MHealth, " \
+                        " (case when facilities_implementation_type.KP = 1 then 'YES' when facilities_implementation_type.KP = 0 then 'NO' else 'N/A' end) AS KP, " \
+                        " facilities_emr_type.type As EMR, facilities_emr_info.status As EMRStatus, " \
+                        " facilities_emr_info.date_of_emr_impl as DateOfEmrImplementation, " \
+                        " facilities_emr_info.mode_of_use as ModeOfEMRUse,             " \
+                        " (case when  facilities_emr_info.lab_manifest = 1 then 'YES' when  facilities_emr_info.lab_manifest = 0 then 'NO' else 'N/A' end) AS Lab_Manifest, " \
+                        " (case when  facilities_emr_info.mnch = 1 then 'YES' when  facilities_emr_info.mnch = 0 then 'NO' else 'N/A' end) AS MNCH, " \
+                        " (case when  facilities_emr_info.tb = 1 then 'YES' when  facilities_emr_info.tb = 0 then 'NO' else 'N/A' end) AS TB, " \
+                        " (case when  facilities_emr_info.ovc = 1 then 'YES' when  facilities_emr_info.ovc = 0 then 'NO' else 'N/A' end) AS OVC, " \
+                        " (case when  facilities_emr_info.otz = 1 then 'YES' when  facilities_emr_info.otz = 0 then 'NO' else 'N/A' end) AS OTZ, " \
+                        " (case when  facilities_emr_info.prep = 1 then 'YES' when  facilities_emr_info.prep = 0 then 'NO' else 'N/A' end) AS PREP, " \
+                        " (case when  facilities_emr_info.kp = 1 then 'YES' when  facilities_emr_info.kp = 0 then 'NO' else 'N/A' end) AS KP, " \
+                        " (case when  facilities_emr_info.hiv = 1 then 'YES' when  facilities_emr_info.hiv = 0 then 'NO' else 'N/A' end) AS HIV, " \
+                        " (case when  facilities_emr_info.tpt = 1 then 'YES' when  facilities_emr_info.tpt = 0 then 'NO' else 'N/A' end) AS TPT, " \
+                        " (case when  facilities_emr_info.covid_19 = 1 then 'YES' when  facilities_emr_info.covid_19 = 0 then 'NO' else 'N/A' end) AS Covid_19, " \
+                        " (case when  facilities_emr_info.evmmc = 1 then 'YES' when  facilities_emr_info.evmmc = 0 then 'NO' else 'N/A' end) AS EVMMC, " \
+                        " facilities_hts_info.status As HTS_Status, " \
+                        " facilities_hts_use_type.hts_use_name As HTS_Use, " \
+                        " facilities_hts_deployment_type.deployment As HTS_Deployment,                        " \
+                        " facilities_il_info.status as IL_Status,                  " \
+                        " (case when  facilities_il_info.webADT_registration = 1 then 'YES' when  facilities_il_info.webADT_pharmacy = 0 then 'NO' else 'N/A' end) AS IL_WebADT, " \
+                        " (case when  facilities_il_info.Mlab = 1 then 'YES' when  facilities_il_info.Mlab = 0 then 'NO' else 'N/A' end) AS IL_Mlab, " \
+                        " (case when  facilities_il_info.Ushauri = 1 then 'YES' when  facilities_il_info.Ushauri = 0 then 'NO' else 'N/A' end) AS IL_Ushauri, " \
+                        " (case when  facilities_il_info.lab_manifest = 1 then 'YES' when  facilities_il_info.lab_manifest = 0 then 'NO' else 'N/A' end) AS IL_lab_manifest, " \
+                        " (case when  facilities_il_info.three_PM = 1 then 'YES' when  facilities_il_info.three_PM = 0 then 'NO' else 'N/A' end) AS IL_3_PM, " \
+                        " (case when  facilities_il_info.air = 1 then 'YES' when  facilities_il_info.air = 0 then 'NO' else 'N/A' end) AS IL_AIR, " \
+                        " (case when  facilities_il_info.nimeconfirm = 1 then 'YES' when  facilities_il_info.nimeconfirm = 0 then 'NO' else 'N/A' end) AS IL_nimeconfirm, " \
+                        " (case when  facilities_mhealth_info.Nishauri = 1 then 'YES' when  facilities_mhealth_info.Nishauri = 0 then 'NO' else 'N/A' end) AS MHealth_Nishauri, " \
+                        " (case when  facilities_mhealth_info.C4C = 1 then 'YES' when  facilities_mhealth_info.C4C = 0 then 'NO' else 'N/A' end) AS MHealth_C4C, " \
+                        " (case when  facilities_mhealth_info.Ushauri = 1 then 'YES' when  facilities_mhealth_info.Ushauri = 0 then 'NO' else 'N/A' end) AS MHealth_Ushauri, " \
+                        " (case when  facilities_mhealth_info.Mlab = 1 then 'YES' when  facilities_mhealth_info.Mlab = 0 then 'NO' else 'N/A' end) AS MHealth_Mlab, " \
+                        " (case when  facilities_mhealth_info.ART_Directory = 1 then 'YES' when  facilities_mhealth_info.ART_Directory = 0 then 'NO' else 'N/A' end) AS MHealth_ART_Directory, " \
+                        " (case when  facilities_mhealth_info.Psurvey = 1 then 'YES' when  facilities_mhealth_info.Psurvey = 0 then 'NO' else 'N/A' end) AS MHealth_Psurvey " \
+                        " FROM mfl_interface_db.facilities_facility_info " \
+                        " LEFT OUTER JOIN mfl_interface_db.facilities_owner " \
+                        " ON mfl_interface_db.facilities_owner .id = mfl_interface_db.facilities_facility_info .owner_id                        " \
+                        " LEFT OUTER JOIN mfl_interface_db.facilities_counties " \
+                        " ON mfl_interface_db.facilities_counties.id = facilities_facility_info.county_id " \
+                        " LEFT OUTER JOIN mfl_interface_db.facilities_sub_counties " \
+                        " ON mfl_interface_db.facilities_sub_counties.id = facilities_facility_info.sub_county_id " \
+                        " LEFT OUTER JOIN mfl_interface_db.facilities_partners " \
+                        " ON mfl_interface_db.facilities_partners.id= facilities_facility_info.partner_id " \
+                        " LEFT OUTER JOIN mfl_interface_db.facilities_emr_info " \
+                        " ON mfl_interface_db.facilities_facility_info.id= facilities_emr_info.id " \
+                        " LEFT OUTER JOIN mfl_interface_db.facilities_emr_type " \
+                        " ON mfl_interface_db.facilities_emr_info.type_id= facilities_emr_type.id " \
+                        " LEFT OUTER JOIN mfl_interface_db.facilities_hts_info " \
+                        " ON mfl_interface_db.facilities_facility_info.id =  facilities_hts_info.facility_info_id " \
+                        " LEFT OUTER JOIN mfl_interface_db.facilities_hts_use_type " \
+                        " ON mfl_interface_db.facilities_hts_info.hts_use_name_id = facilities_hts_use_type.id " \
+                        " LEFT OUTER JOIN mfl_interface_db.facilities_hts_deployment_type " \
+                        " ON mfl_interface_db.facilities_hts_info.deployment_id = facilities_hts_deployment_type.id " \
+                        " LEFT OUTER JOIN mfl_interface_db.facilities_il_info " \
+                        " ON mfl_interface_db.facilities_il_info.facility_info_id = facilities_facility_info.id " \
+                        " LEFT OUTER JOIN mfl_interface_db.facilities_mhealth_info " \
+                        " ON mfl_interface_db.facilities_mhealth_info.facility_info_id = facilities_facility_info.id " \
+                        " LEFT OUTER JOIN mfl_interface_db.facilities_implementation_type " \
+                        " ON mfl_interface_db.facilities_implementation_type.facility_info_id = facilities_facility_info.id " \
+                        " where facilities_facility_info.approved = True "
     with connection.cursor() as cursor:
-        cursor.execute('SELECT facilities_facility_info.id, facilities_facility_info.mfl_code, '
-                       'facilities_facility_info.name, facilities_counties.name, facilities_sub_counties.name,'
-                       'facilities_facility_info.partner_id, facilities_owner.name,  '
-                       'facilities_facility_info.lat, facilities_facility_info.lon, '
-                       'facilities_implementation_type.ct, facilities_implementation_type.hts, facilities_implementation_type.il, '
-                       'facilities_implementation_type.mHealth, facilities_implementation_type.kp '
-                       'FROM facilities_facility_info '
-                       'JOIN facilities_owner '
-                       'ON facilities_owner.id = facilities_facility_info.owner_id '                       
-                       'JOIN facilities_counties '
-                       'ON facilities_counties.id = facilities_facility_info.county_id '
-                       'JOIN facilities_sub_counties '
-                       'ON facilities_sub_counties.id = facilities_facility_info.sub_county_id '
-                       'JOIN facilities_implementation_type '
-                       'ON facilities_implementation_type.facility_info_id = facilities_facility_info.id '
-                       'where approved = True;')
+        cursor.execute(query)
         default_all_facilities_data = cursor.fetchall()
 
     if data['OrganizationId'] != None:
@@ -1080,130 +1131,29 @@ def data_for_excel(request):
         if organization.org_access_right:
             # if an organization id is sent back, filter according to that org id
             with connection.cursor() as cursor:
-                cursor.execute('SELECT facilities_facility_info.id, facilities_facility_info.mfl_code, '
-                               'facilities_facility_info.name, facilities_counties.name, facilities_sub_counties.name,'
-                               'facilities_facility_info.partner_id, facilities_owner.name,  '
-                               'facilities_facility_info.lat, facilities_facility_info.lon, '
-                               'facilities_implementation_type.ct, facilities_implementation_type.hts, facilities_implementation_type.il, '
-                               'facilities_implementation_type.mHealth, facilities_implementation_type.kp '
-                               'FROM facilities_facility_info '
-                               'JOIN facilities_owner '
-                               'ON facilities_owner.id = facilities_facility_info.owner_id '                       
-                               'JOIN facilities_counties '
-                               'ON facilities_counties.id = facilities_facility_info.county_id '
-                               'JOIN facilities_sub_counties '
-                               'ON facilities_sub_counties.id = facilities_facility_info.sub_county_id '
-                               'JOIN facilities_implementation_type '
-                               'ON facilities_implementation_type.facility_info_id = facilities_facility_info.id '
-                               'where facilities_facility_info.partner_id = ' + str(organization.org_access_right.id) +
-                               ' and facilities_facility_info.approved = True;')
+                cursor.execute(query + ' and facilities_facility_info.partner_id = ' + str(organization.org_access_right.id))
                 facilities_info = cursor.fetchall()
         else:
             facilities_info = default_all_facilities_data
     else:
         facilities_info = default_all_facilities_data
 
-    #append data to a list
-    facilitiesdata = []
+    # add the column headings
+    columnnames = (('mfl_code','FacilityName','County','SubCounty','Owner','lat','lon','SDP','CT','HTS','IL','MHealth','KP','EMR',
+                 'EMRStatus','DateOfEmrImplementation','ModeOfEMRUse','Lab_Manifest','MNCH','TB','OVC','OTZ','PREP','KP','HIV','TPT',
+                 'Covid_19','EVMMC','HTS_Status','HTS_Use','HTS_Deployment','IL_Status','IL_WebADT','IL_Mlab','IL_Ushauri','IL_lab_manifest',
+                 'IL_3_PM','IL_AIR','IL_nimeconfirm','MHealth_Nishauri','MHealth_C4C','MHealth_Ushauri','MHealth_Mlab','MHealth_ART_Directory',
+                 'MHealth_Psurvey'))
+    facilities = []
+    facilities.append(columnnames)
+    for i in facilities_info:
+        facilities.append(i)
 
-    for row in facilities_info:
-        # check if partner id in Facility table has a value
-        if row[5] != None:
-            with connection.cursor() as cursor:
-                cursor.execute('SELECT facilities_partners.name, facilities_sdp_agencies.name '
-                               'FROM facilities_partners '
-                               'JOIN facilities_sdp_agencies '
-                               'ON facilities_sdp_agencies.id = facilities_partners.agency_id '
-                               'where facilities_partners.id = ' + str(row[5]) + ';')
-                partner_data = cursor.fetchone()
-                sdp = partner_data[0]
-                agency = partner_data[1]
-        else:
-            sdp = ""
-            agency = ""
 
-        emr_info = EMR_Info.objects.get(facility_info=row[0])
-        hts_info = HTS_Info.objects.get(facility_info=row[0])
-        with connection.cursor() as cursor:
-            cursor.execute('SELECT facilities_il_info.status, facilities_il_info.webADT_pharmacy, '
-                           'facilities_il_info.three_PM, facilities_il_info.air, facilities_il_info.Ushauri, '
-                           'facilities_il_info.Mlab, facilities_il_info.lab_manifest, facilities_il_info.nimeconfirm '
-                           'FROM facilities_il_info '
-                           'where facilities_il_info.facility_info_id = %s;', [row[0]])
-            il_info = cursor.fetchone()
+    return JsonResponse(facilities, safe=False)
 
-        with connection.cursor() as cursor:
-            cursor.execute('SELECT facilities_mhealth_info.Ushauri, facilities_mhealth_info.Nishauri, '
-                           'facilities_mhealth_info.C4C, facilities_mhealth_info.Mlab, '
-                           'facilities_mhealth_info.Psurvey, facilities_mhealth_info.ART_Directory '
-                           'FROM facilities_mhealth_info '
-                           'where facilities_mhealth_info.facility_info_id = %s;', [row[0]])
-            mhealth_info = cursor.fetchone()
 
-        # MHealth_Info.objects.raw('SELECT * FROM facilities_mhealth_info WHERE facility_info_id = %s', [row[0]])
 
-        ct = "CT " if row[9] else ""
-        hts = "HTS " if row[10] else ""
-        il = "IL " if row[11] else ""
-        mhealth = "MHealth " if row[12] else ""
-        KP = "KP " if row[13] else ""
-
-        implementation = ct + hts + il + mhealth + KP
-
-        try:
-            dataObj = {}
-            dataObj["MFL Code"] = row[1]
-            dataObj["Name"] = row[2]
-            dataObj["County"] = row[3]
-            dataObj["SubCounty"] = row[4]
-            dataObj["Owner"] = row[6] if row[6] else ""
-            dataObj["Partner"] = sdp
-            dataObj["Agency"] = agency
-            dataObj["Latitude"] = row[7] if row[7] else ""
-            dataObj["Longitude"] = row[8] if row[8] else ""
-            dataObj["Implementation"] = implementation
-
-            dataObj["EMR Type"] = emr_info.type.type if emr_info.type else ""
-            dataObj["EMR Status"] = emr_info.status if emr_info.status else ""
-            dataObj["Mode Of Use"] = emr_info.mode_of_use if emr_info.mode_of_use else ""
-            dataObj["Date of EMR Implementation"] = emr_info.date_of_emr_impl
-            dataObj["HTS Use"] = hts_info.hts_use_name.hts_use_name if hts_info.hts_use_name else ""
-            dataObj["HTS Deployment"] = hts_info.deployment.deployment if hts_info.deployment else ""
-            dataObj["HTS Status"] = hts_info.status
-            dataObj["IL Status"] = il_info[0] if il_info[0] != 'nan' else ''
-            # dataObj["webADT_registration"] = il_info[1]
-            dataObj["IL WebADT"] = check_true_or_false(il_info[1])
-            dataObj["ovc_offered"] = check_true_or_false(emr_info.ovc)
-            dataObj["otz_offered"] = check_true_or_false(emr_info.otz)
-            dataObj["tb_offered"] = check_true_or_false(emr_info.tb)
-            dataObj["prep_offered"] = check_true_or_false(emr_info.prep)
-            dataObj["mnch_offered"] = check_true_or_false(emr_info.mnch)
-            dataObj["kp_offered"] = check_true_or_false(emr_info.kp)
-            dataObj["lab_man_offered"] = check_true_or_false(emr_info.lab_manifest)
-            dataObj["hiv_offered"] = check_true_or_false(emr_info.hiv)
-            dataObj["tpt_offered"] = check_true_or_false(emr_info.tpt)
-            dataObj["covid_19_offered"] = check_true_or_false(emr_info.covid_19)
-            dataObj["evmmc_offered"] = check_true_or_false(emr_info.evmmc)
-
-            dataObj["MHealth Ushauri"] = check_true_or_false(mhealth_info[0])
-            dataObj["MHealth Nishauri"] = check_true_or_false(mhealth_info[1])
-            dataObj["MHealth C4C"] = check_true_or_false(mhealth_info[2])
-            dataObj["MHealth Mlab"] = check_true_or_false(mhealth_info[3])
-            dataObj["MHealth Psurvey"] = check_true_or_false(mhealth_info[4])
-            dataObj["MHealth ART"] = check_true_or_false(mhealth_info[5])
-
-            dataObj["IL 3PM"] = check_true_or_false(il_info[2])
-            dataObj["IL Air"] = check_true_or_false(il_info[3])
-            dataObj["IL Ushauri"] = check_true_or_false(il_info[4])
-            dataObj["IL Mlab"] = check_true_or_false(il_info[5])
-            dataObj["IL Lab_manifest"] = check_true_or_false(il_info[6])
-            dataObj["IL Nimeconfirm"] = check_true_or_false(il_info[7])
-
-            facilitiesdata.append(dataObj)
-        except Exception as e:
-            print('error ----->', e)
-
-    return JsonResponse(facilitiesdata, safe=False)
  # ======================= API =====================
 #
 
