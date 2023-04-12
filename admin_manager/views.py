@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import logout
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
+from django.db import connection
 from .forms.users.forms import *
 from django.contrib import messages
 import random
@@ -14,7 +15,7 @@ from facilities.models import *
 
 
 def redirect_to_frontend(request):
-    return JsonResponse({'status': 'success'})
+    return JsonResponse({'status': 'success', 'endpoints':'UP', 'v':2.000, 'date':'28/02/2023'})
 
 
 def view_unapproved(request):
@@ -64,6 +65,40 @@ def view_edits(request):
     return render(request, 'admin_manager/view_edits.html', {'editsdata': editsdata})
 
 
+def view_duplicates(request):
+    with connection.cursor() as cursor:
+        cursor.execute('SELECT mfl_code, approved, COUNT(mfl_code) '
+                        'FROM facilities_facility_info '
+                        'GROUP BY mfl_code, approved '
+                        'HAVING COUNT(mfl_code) > 1 and approved=true')
+        existingduplicates = cursor.fetchall()
+
+    duplicatesdata = []
+    if len(existingduplicates) > 0:
+
+        for dup in existingduplicates:
+            facilities_info = Facility_Info.objects.prefetch_related('partner') \
+                .select_related('county').select_related('partner').select_related('owner') \
+                .select_related('sub_county').filter(mfl_code=dup[0])
+            for row in facilities_info:
+                dataObj = {}
+                dataObj["id"] = row.id
+                dataObj["mfl_code"] = row.mfl_code
+                dataObj["name"] = row.name
+                dataObj["county"] = row.county
+                dataObj["sub_county"] = row.sub_county
+                dataObj["owner"] = row.owner.name
+                dataObj["lat"] = row.lat
+                dataObj["lon"] = row.lon
+                dataObj["partner"] = row.partner.name if row.partner else ""
+                dataObj["agency"] = row.partner.agency.name if row.partner and row.partner.agency else ""
+
+                duplicatesdata.append(dataObj)
+    return render(request, 'admin_manager/view_duplicates.html', {'duplicatesdata': duplicatesdata})
+
+
+
+
 def delete_facility(request, facility_id):
 
     # get rid of the edits
@@ -75,6 +110,16 @@ def delete_facility(request, facility_id):
     # messages.add_message(request, messages.SUCCESS, "Facility successfully deleted!")
     return HttpResponse('success')
 
+def delete_duplicate(request, facility_id):
+
+    # get rid of the edits
+    try:
+        Facility_Info.objects.get(pk=facility_id, approved=True).delete()
+    except Facility_Info.DoesNotExist:
+        print('Facility doesnt exist')
+
+    # messages.add_message(request, messages.SUCCESS, "Facility successfully deleted!")
+    return HttpResponse('success')
 
 def delete_edit(request, facility_id):
 

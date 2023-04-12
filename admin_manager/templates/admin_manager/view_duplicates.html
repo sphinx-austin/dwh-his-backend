@@ -1,0 +1,83 @@
+{% extends 'admin_manager/layout.html' %}
+
+{% block content %}
+        <section class="mx-4">
+            <h2>Duplicate Data</h2>
+
+            <table id="facilities_list" class="display">
+                <thead>
+                    <tr>
+                        <th>MFL Code</th>
+                        <th>Facility Name</th>
+                        <th>County</th>
+                        <th>Sub County</th>
+                        <th>Owner</th>
+                        <th>SDP</th>
+                        <th>SDP Agency</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for data in duplicatesdata %}
+                    <tr>
+                        <td><a href="/facilities/update_facility/{{data.id}}">{{data.mfl_code}}<i class="fas fa-check"></i></a></td>
+                        <td>{{data.name}}</td>
+                        <td>{{data.county.name}}</td>
+                        <td>{{data.sub_county.name}}</td>
+                        <td>{{data.owner}}</td>
+                        <td>{{data.partner}}</td>
+                        <td>{{data.agency}}</td>
+                        <td>
+                            {% if user.is_authenticated %}
+                              <i class="fa-solid fa-trash-can fa-lg text-danger" onclick='confirm_delete("{{data.id}}")'></i>
+                           {% else %}
+                              <a href="/admin/manager/user/login"><i class="fa-solid fa-trash-can fa-2x text-danger"></i></a>
+                           {% endif %}
+<!--                               <i class="fa-solid fa-trash-can fa-lg text-danger" onclick='confirm_delete("{{data.id}}")'></i>-->
+
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>.
+
+        <script>
+
+            function confirm_delete(facility_id){
+                Swal.fire({
+                  title: "Delete Selected facility duplicate?",
+                    text:"This will delete all data for this Selected duplicate permanently",
+                  icon: 'warning',
+                  showCancelButton: true,
+                  confirmButtonColor: '#1ab394',
+                  cancelButtonColor: '#d33',
+                  confirmButtonText: 'Delete'
+                }).then((result) => {
+                  if (result.isConfirmed) {
+                    Swal.fire(
+                      'Success!',
+                      'Selected duplicate  was successfully deleted.',
+                      'success'
+                    )
+
+                    $.get( "/admin/manager/duplicate/delete/"+facility_id);
+                    setTimeout(()=>{
+                        window.location.href = "/admin/manager/view duplicates";
+                    },3000)
+
+
+
+                  }
+                })
+
+            }
+        </script>
+
+        <script>
+            $(document).ready( function () {
+                $('#facilities_list').DataTable();
+            } );
+        </script>
+
+{% endblock %}

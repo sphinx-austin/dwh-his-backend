@@ -1202,3 +1202,106 @@ def get_partners_list(request):
 
     return JsonResponse(partners_list, safe=False)
 
+
+@csrf_exempt
+def submitted_approvals(request):
+    facilitiesdata = []
+
+    if (request.body):
+        data = json.loads(request.body)
+
+    submittedInfo = Edited_Facility_Info.objects.filter(user_edited_email=data['Email']).prefetch_related('partner') \
+        .select_related('county').select_related('partner').select_related('owner') \
+        .select_related('sub_county')
+
+    for row in submittedInfo:
+        # check if partner id in Facility table has a value
+        if row.partner_id != None:
+            with connection.cursor() as cursor:
+                cursor.execute('SELECT facilities_partners.name, facilities_sdp_agencies.name '
+                               'FROM facilities_partners '
+                               'JOIN facilities_sdp_agencies '
+                               'ON facilities_sdp_agencies.id = facilities_partners.agency_id '
+                               'where facilities_partners.id = '+ str(row.partner_id) +';')
+                partner_data = cursor.fetchone()
+                sdp = partner_data[0]
+                agency = partner_data[1]
+        else:
+            sdp = ""
+            agency = ""
+
+        dataObj = {}
+        dataObj["id"] = row.id
+        dataObj["mfl_code"] = row.mfl_code
+        dataObj["name"] = row.name
+        dataObj["county"] = row.county.name
+        dataObj["sub_county"] = row.sub_county.name
+        dataObj["owner"] = row.owner.name if row.owner.name else ""
+        dataObj["partner"] = sdp
+        dataObj["agency"] = agency
+        dataObj["submitted_by"] = row.user_edited_email
+        dataObj["date_edited"] = row.date_edited.strftime('%Y-%m-%d')
+
+        facilitiesdata.append(dataObj)
+
+    return JsonResponse(facilitiesdata,safe=False)
+
+
+@csrf_exempt
+def pending_approvals(request):
+    facilitiesdata = []
+
+    if (request.body):
+        data = json.loads(request.body)
+
+    with connection.cursor() as cursor:
+        cursor.execute('SELECT facilities_edited_facility_info.facility_info_id, facilities_edited_facility_info.mfl_code, '
+                       'facilities_edited_facility_info.name, facilities_counties.name, facilities_sub_counties.name,'
+                       'facilities_owner.name, facilities_edited_facility_info.date_edited,   facilities_edited_facility_info.user_edited_email,'
+                       'facilities_implementation_type.ct, facilities_implementation_type.hts, facilities_implementation_type.il, '
+                       'facilities_implementation_type.mHealth, facilities_implementation_type.kp '
+                       'FROM facilities_edited_facility_info '
+                       ' LEFT OUTER JOIN facilities_owner '
+                       'ON facilities_owner.id = facilities_edited_facility_info.owner_id '                      
+                       'JOIN facilities_counties '
+                       'ON facilities_counties.id = facilities_edited_facility_info.county_id '
+                       'JOIN facilities_sub_counties '
+                       'ON facilities_sub_counties.id = facilities_edited_facility_info.sub_county_id '
+                       'JOIN facilities_implementation_type '
+                       'ON facilities_implementation_type.facility_info_id = facilities_edited_facility_info.facility_info_id '
+                       'JOIN facilities_organization_his_approvers '
+                       'ON facilities_organization_his_approvers.organization_id = facilities_edited_facility_info.partner_id '
+                       'where facilities_organization_his_approvers.email="mary.kilewe@thepalladiumgroup.com" '
+                       )
+        submittedInfo = cursor.fetchall()
+
+
+    for row in submittedInfo:
+        # check if partner id in Facility table has a value
+        # if row.partner_id != None:
+        #     with connection.cursor() as cursor:
+        #         cursor.execute('SELECT facilities_partners.name, facilities_sdp_agencies.name '
+        #                        'FROM facilities_partners '
+        #                        'JOIN facilities_sdp_agencies '
+        #                        'ON facilities_sdp_agencies.id = facilities_partners.agency_id '
+        #                        'where facilities_partners.id = ' + str(row.partner_id) + ';')
+        #         partner_data = cursor.fetchone()
+        #         sdp = partner_data[0]
+        #         agency = partner_data[1]
+        # else:
+        #     sdp = ""
+        #     agency = ""
+
+        dataObj = {}
+        dataObj["id"] = uuid.UUID(row[0])
+        dataObj["mfl_code"] = row[1]
+        dataObj["name"] = row[2]
+        dataObj["county"] = row[3]
+        dataObj["sub_county"] = row[4]
+        dataObj["owner"] = row[5]
+        dataObj["submitted_by"] = row[7]
+        dataObj["date_edited"] = row[6].strftime('%Y-%m-%d')
+
+        facilitiesdata.append(dataObj)
+
+    return JsonResponse(facilitiesdata, safe=False)
