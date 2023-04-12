@@ -3,6 +3,7 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
+    path(r'facilities', views.facilities, name='facilities'),
     path(r'facilities/add_facility', views.add_facility_data, name='add_facility_data'),
     path(r'facilities/update_facility/<uuid:facility_id>', views.update_facility_data, name='update_facility_data'),
     path(r'facilities/check/facility_edits/<uuid:facility_id>', views.check_for_facility_edits, name='check_for_facility_edits'),
@@ -22,9 +23,10 @@ urlpatterns = [
     path(r'test_email', views.test_email, name='test_email'),
     path(r'new_facility_send_email', views.new_facility_send_email, name='new_facility_send_email'),
     path(r'facilities/delete_facility/<uuid:facility_id>', views.delete_facility, name='delete_facility'),
+    path(r'facilities/submitted/approvals', views.submitted_approvals, name='submitted_approvals'),
+    path(r'facilities/pending/approvals', views.pending_approvals, name='pending_approvals'),
 
     path(r'fill_database', views.fill_database, name='fill_database'),
-    path(r'facilities', views.facilities, name='facilities'),
     path(r'facilities/emr_types', views.emr_types, name='emr_types'),
     path(r'facilities/org_stewards_and_HISapprovers', views.org_stewards_and_HISapprovers, name='org_stewards_and_HISapprovers'),
     path(r'facilities/hts_deployment_types', views.hts_deployment_types, name='hts_deployment_types'),
