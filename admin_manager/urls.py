@@ -9,10 +9,13 @@ urlpatterns = [
     path('', views.redirect_to_frontend, name='redirect_to_frontend'),
     path('admin/manager/view unapproved', views.view_unapproved, name='view_unapproved'),
     path('admin/manager/view edits', views.view_edits, name='view_edits'),
+    path('admin/manager/view duplicates', views.view_duplicates, name='view_duplicates'),
 
     path('admin/manager/user/login/', auth_views.LoginView.as_view(template_name='admin_manager/login.html'), name='login'),
     path('admin/manager/facility/delete/<uuid:facility_id>', views.delete_facility, name='delete_facility'),
     path('admin/manager/edit/delete/<uuid:facility_id>', views.delete_edit, name='delete_edit'),
+    path('admin/manager/duplicate/delete/<uuid:facility_id>', views.delete_duplicate, name='delete_duplicate'),
+
     path('admin/manager/logout_user/', views.logout_user, name='logout_user'),
 
 
