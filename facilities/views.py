@@ -1218,6 +1218,8 @@ def submitted_approvals(request):
 
     for row in submittedInfo:
         # check if partner id in Facility table has a value
+        unapprovedInfo = Facility_Info.objects.filter(approved=False, id=row.facility_info.id)
+        print(unapprovedInfo)
         if row.partner_id != None:
             with connection.cursor() as cursor:
                 cursor.execute('SELECT facilities_partners.name, facilities_sdp_agencies.name '
@@ -1274,7 +1276,7 @@ def pending_approvals(request):
                        'ON facilities_implementation_type.facility_info_id = facilities_edited_facility_info.facility_info_id '
                        'JOIN facilities_organization_his_approvers '
                        'ON facilities_organization_his_approvers.organization_id = facilities_edited_facility_info.partner_id '
-                       'where facilities_organization_his_approvers.email="mary.kilewe@thepalladiumgroup.com" '
+                       'where facilities_organization_his_approvers.email="'+data['Email']+'" '
                        )
         submittedInfo = cursor.fetchall()
 
