@@ -754,7 +754,10 @@ def fetch_edited_data(request, facility_id):
         il_info = IL_Info.objects.get(facility_edits=facility_info.id)
         mhealth_info = MHealth_Info.objects.get(facility_edits=facility_info.id)
 
-        org_his_approver = Organization_HIS_approvers.objects.get(organization=facility_info.partner.id)
+        org_his_approver = Organization_HIS_approvers.objects.filter(organization=facility_info.partner.id)
+        approvers = []
+        for i in org_his_approver:
+            approvers.append(i.email.lower())
 
         ct = "CT" if implementation_info.ct else ""
         hts = "HTS" if implementation_info.hts else ""
@@ -763,7 +766,7 @@ def fetch_edited_data(request, facility_id):
         implementation = [ct, hts, il]
 
         dataObj = {}
-        dataObj["org_his_approver_email"] = org_his_approver.email if org_his_approver else None
+        dataObj["org_his_approver_emails"] = approvers
         dataObj["user_edited_email"] = facility_info.user_edited_email
         dataObj["id"] = facility_info.id
         dataObj["mfl_code"] = facility_info.mfl_code
