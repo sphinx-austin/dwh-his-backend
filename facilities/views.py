@@ -338,6 +338,8 @@ def org_stewards_and_HISapprovers(request):
 
     approver_email = Organization_HIS_approvers.objects.get(organization=data["partner"])
     allowed_users.append(approver_email.email.lower() if approver_email else None)
+    print('steward_emails -->', allowed_users)
+
     return JsonResponse(allowed_users, safe=False)
 
 
@@ -1231,7 +1233,8 @@ def submitted_approvals(request):
             agency = ""
 
         dataObj = {}
-        dataObj["id"] = row.id
+        # dataObj["id"] = row.id
+        dataObj["id"] = row.facility_info.id
         dataObj["mfl_code"] = row.mfl_code
         dataObj["name"] = row.name
         dataObj["county"] = row.county.name
