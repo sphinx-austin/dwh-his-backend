@@ -10,6 +10,8 @@ urlpatterns = [
     path(r'facilities/fetch_edits/data/<uuid:facility_id>', views.fetch_edited_data, name='fetch_edited_data'),
     path(r'facilities/approve_changes/<uuid:facility_id>', views.approve_facility_changes, name='approve_facility_changes'),
     path(r'facilities/reject_changes/<uuid:facility_id>', views.reject_facility_changes, name='reject_facility_changes'),
+    path(r'facilities/delete/pending/approval/edit/<uuid:edit_id>', views.delete_unwanted_approvals, name='delete_unwanted_approvals'),
+
     path(r'facilities/view_facility/data/<uuid:facility_id>', views.view_facility_data, name='view_facility_data'),
     path(r'facilities/partners', views.partners, name='partners'),
     path(r'facilities/edit_partner/<int:partner_id>', views.edit_partner, name='edit_partner'),

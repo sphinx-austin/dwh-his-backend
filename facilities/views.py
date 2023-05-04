@@ -925,6 +925,19 @@ def reject_facility_changes(request, facility_id):
         Edited_Facility_Info.objects.select_related('facility_info').get(facility_info=facility_id).delete()
         return JsonResponse({'status_code': 200, 'redirect_url': 'home/'})
 
+@csrf_exempt
+def delete_unwanted_approvals(request, edit_id):
+    # data = json.loads(request.body)
+
+    try:
+        edit = Edited_Facility_Info.objects.select_related('facility_info').get(id=edit_id)
+
+        Facility_Info.objects.get(pk=edit.facility_info.id, approved=False).delete()
+        edit.delete()
+        return JsonResponse({'status_code': 200, 'redirect_url': 'home/'})
+    except Facility_Info.DoesNotExist:
+        Edited_Facility_Info.objects.select_related('facility_info').get(id=edit_id).delete()
+        return JsonResponse({'status_code': 200, 'redirect_url': 'home/'})
 
 def view_facility_data(request, facility_id):
 
@@ -1267,7 +1280,7 @@ def pending_approvals(request):
                        'facilities_edited_facility_info.name, facilities_counties.name, facilities_sub_counties.name,'
                        'facilities_owner.name, facilities_edited_facility_info.date_edited,   facilities_edited_facility_info.user_edited_email,'
                        'facilities_implementation_type.ct, facilities_implementation_type.hts, facilities_implementation_type.il, '
-                       'facilities_implementation_type.mHealth, facilities_implementation_type.kp '
+                       'facilities_implementation_type.mHealth, facilities_implementation_type.kp,facilities_edited_facility_info.id '
                        'FROM facilities_edited_facility_info '
                        ' LEFT OUTER JOIN facilities_owner '
                        'ON facilities_owner.id = facilities_edited_facility_info.owner_id '                      
@@ -1285,20 +1298,6 @@ def pending_approvals(request):
 
 
     for row in submittedInfo:
-        # check if partner id in Facility table has a value
-        # if row.partner_id != None:
-        #     with connection.cursor() as cursor:
-        #         cursor.execute('SELECT facilities_partners.name, facilities_sdp_agencies.name '
-        #                        'FROM facilities_partners '
-        #                        'JOIN facilities_sdp_agencies '
-        #                        'ON facilities_sdp_agencies.id = facilities_partners.agency_id '
-        #                        'where facilities_partners.id = ' + str(row.partner_id) + ';')
-        #         partner_data = cursor.fetchone()
-        #         sdp = partner_data[0]
-        #         agency = partner_data[1]
-        # else:
-        #     sdp = ""
-        #     agency = ""
 
         dataObj = {}
         dataObj["id"] = uuid.UUID(row[0])
@@ -1309,6 +1308,7 @@ def pending_approvals(request):
         dataObj["owner"] = row[5]
         dataObj["submitted_by"] = row[7]
         dataObj["date_edited"] = row[6].strftime('%Y-%m-%d')
+        dataObj["edit_id"] = uuid.UUID(row[13])
 
         facilitiesdata.append(dataObj)
 
